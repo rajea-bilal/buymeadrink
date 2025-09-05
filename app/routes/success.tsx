@@ -58,7 +58,7 @@ export default function Success() {
     );
   }
 
-  const { isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const subscription = useQuery(api.subscriptions.fetchUserSubscription);
   const upsertUser = useMutation(api.users.upsertUser);
   const [waitTime, setWaitTime] = useState(0);
@@ -80,6 +80,18 @@ export default function Success() {
       return () => clearInterval(interval);
     }
   }, [subscription, isSignedIn]);
+
+  // Avoid flashing Access Denied while Clerk is hydrating
+  if (!isLoaded) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-screen px-4">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading…</span>
+        </div>
+      </section>
+    );
+  }
 
   if (!isSignedIn) {
     return (
