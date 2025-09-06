@@ -24,7 +24,7 @@ const FAQ_ITEMS = [
   {
     question: "How do I deploy to production?",
     answer:
-      "Push to Vercel or Docker—both paths are baked in. Env variables for Clerk, Convex and Polar are the only setup you need.",
+      "Push to Vercel or self host on your own infrastructure (Docker file included). Both paths are baked in.",
   },
 ];
 
