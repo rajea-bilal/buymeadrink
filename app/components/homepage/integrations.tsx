@@ -90,7 +90,7 @@ export default function IntegrationsSection({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    📚 Member Documentation
+                    Documentation
                   </Link>
                 </Button>
 
@@ -100,7 +100,7 @@ export default function IntegrationsSection({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    🚀 Join Accelerator to get free access
+                    Join Accelerator to get free access
                   </Link>
                 </Button>
               </div>
