@@ -50,8 +50,8 @@ export function OptimizedImage({
 
   return (
     <div className={cn("relative overflow-hidden", className)} ref={imgRef}>
-      {/* Placeholder (skip for priority images to avoid extra decode/paint) */}
-      {!isLoaded && !priority && (
+      {/* Placeholder */}
+      {!isLoaded && (
         <img
           src={placeholder}
           alt=""
@@ -59,7 +59,7 @@ export function OptimizedImage({
           aria-hidden="true"
         />
       )}
-
+      
       {/* Actual image - only load when in view */}
       {isInView && (
         <img
@@ -73,9 +73,7 @@ export function OptimizedImage({
           )}
           onLoad={() => setIsLoaded(true)}
           loading={priority ? "eager" : "lazy"}
-          decoding={priority ? "sync" : "async"}
-          // Encourage the browser to fetch priority images sooner (React 18.3+)
-          fetchPriority={priority ? ("high" as any) : (undefined as any)}
+          decoding="async"
         />
       )}
     </div>
@@ -97,8 +95,6 @@ export function OptimizedLogo({
       className={className}
       priority={true} // Logos should load immediately
       placeholder="data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' fill='%23e5e7eb' rx='4'/%3E%3C/svg%3E"
-      width={props.width ?? 32}
-      height={props.height ?? 32}
     />
   );
 }
