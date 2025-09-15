@@ -80,7 +80,7 @@ export default function IntegrationsSection({
                 Kaizen
               </h2>
               <p className="text-muted-foreground text-3xl">
-                Private React Router v7 Boilerplate. Available exclusively for Accelerator members.
+                High-Performance React Router v7 Boilerplate. Available for purchase or to Accelerator members.
               </p>
 
               <div className="flex gap-2 justify-center sm:justify-start">
