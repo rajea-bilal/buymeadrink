@@ -3,6 +3,6 @@ import { OptimizedLogo } from "../ui/optimized-image";
 
 export default function ClerkLogo(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <OptimizedLogo src="/clerk.png" alt="Clerk logo" className="h-8 !w-auto" {...props} />
+    <OptimizedLogo src="/clerk.svg" alt="Clerk logo" className="h-8 !w-auto" {...props} />
   );
 } 
