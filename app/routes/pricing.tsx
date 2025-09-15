@@ -1,305 +1,88 @@
 "use client";
-import { useAuth } from "@clerk/react-router";
-import { useAction, useMutation, useQuery } from "convex/react";
-import { Check, Loader2 } from "lucide-react";
-import * as React from "react";
+import { CheckCircle2, Loader2, Users } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { api } from "../../convex/_generated/api";
+import * as PricingCard from "~/components/ui/pricing-card";
 import { isFeatureEnabled, config } from "../../config";
 
-export default function IntegratedPricing() {
-  // Early return if payments are not enabled
-  if (!isFeatureEnabled('payments') || !config.ui.showPricing) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Pricing Not Available</h2>
-          <p className="text-muted-foreground">
-            Pricing functionality is currently disabled.
-          </p>
-        </div>
-      </div>
-    );
+const POLAR_CHECKOUT_URL =
+  "https://buy.polar.sh/polar_cl_j6BOG8r1GyWlJm5h4VoEy2oltoL0ObZNnWiVw3D3sPM";
+
+export default function Pricing() {
+  if (!isFeatureEnabled("payments") || !config.ui.showPricing) {
+    return null;
   }
 
-  // Early return if convex is not enabled (needed for subscription management)
-  if (!isFeatureEnabled('convex')) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Service Unavailable</h2>
-          <p className="text-muted-foreground">
-            Pricing functionality requires backend services.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { isSignedIn, userId } = useAuth();
-
-  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
-  const [plans, setPlans] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const getPlans = useAction(api.subscriptions.getAvailablePlans);
-  const subscriptionStatus = useQuery(
-    api.subscriptions.checkUserSubscriptionStatus,
-    {
-      userId: isSignedIn ? userId : undefined,
-    }
-  );
-  const userSubscription = useQuery(api.subscriptions.fetchUserSubscription);
-  const createCheckout = useAction(api.subscriptions.createCheckoutSession);
-  const createPortalUrl = useAction(api.subscriptions.createCustomerPortalUrl);
-  const upsertUser = useMutation(api.users.upsertUser);
-
-  // Sync user when signed in
-  React.useEffect(() => {
-    if (isSignedIn) {
-      upsertUser().catch(console.error);
-    }
-  }, [isSignedIn, upsertUser]);
-
-  // Load plans on component mount
-  React.useEffect(() => {
-    const loadPlans = async () => {
-      try {
-        const result = await getPlans();
-        setPlans(result);
-      } catch (error) {
-        console.error("Failed to load plans:", error);
-        setError("Failed to load pricing plans. Please try again.");
-      }
-    };
-    loadPlans();
-  }, [getPlans]);
-
-  const handleSubscribe = async (priceId: string) => {
-    if (!isSignedIn) {
-      // Redirect to sign in
-      window.location.href = "/sign-in";
-      return;
-    }
-
-    setLoadingPriceId(priceId);
-    setError(null);
-
-    try {
-      // Ensure user exists in database before action
-      await upsertUser();
-
-      // If user has active subscription, redirect to customer portal for plan changes
-      if (
-        userSubscription?.status === "active" &&
-        userSubscription?.customerId
-      ) {
-        const portalResult = await createPortalUrl({
-          customerId: userSubscription.customerId,
-        });
-        window.open(portalResult.url, "_blank");
-        setLoadingPriceId(null);
-        return;
-      }
-
-      // Otherwise, create new checkout for first-time subscription
-      const checkoutUrl = await createCheckout({ priceId });
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error("Failed to process subscription action:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to process request. Please try again.";
-      setError(errorMessage);
-      setLoadingPriceId(null);
-    }
+  const onBuy = () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    window.location.href = POLAR_CHECKOUT_URL;
   };
 
-  if (!plans) {
-    return (
-      <section className="flex flex-col items-center justify-center min-h-screen px-4">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading plans...</span>
-        </div>
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-      </section>
-    );
-  }
+  const features = [
+    "Save 40+ hours of setup and configuration",
+    "Production‑grade boilerplate with documentation",
+    "Everything pre‑wired so you can focus on your product",
+    "Unlimited projects",
+  ];
 
   return (
-    <section className="flex flex-col items-center justify-center min-h-screen px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          Simple, transparent pricing
-        </h1>
-        <p className="text-xl text-muted-foreground">
-          Choose the plan that fits your needs
-        </p>
-        {isSignedIn && !subscriptionStatus?.hasActiveSubscription && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
-            <p className="text-blue-800 font-medium">📋 Complete your setup</p>
-            <p className="text-blue-700 text-sm mt-1">
-              You're signed in! Choose a plan below to access your dashboard and
-              start using all features.
-            </p>
-          </div>
-        )}
-      </div>
+    <section id="pricing" className="py-16 md:py-32">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-2xl space-y-2 text-center">
+          <h1 className="text-center text-4xl font-semibold lg:text-5xl">
+            Lifetime access
+          </h1>
+          <p className="text-muted-foreground">for one developer</p>
+        </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full">
-        {plans.items
-          .sort((a: any, b: any) => {
-            const priceComparison = a.prices[0].amount - b.prices[0].amount;
-            return priceComparison !== 0
-              ? priceComparison
-              : a.name.localeCompare(b.name);
-          })
-          .map((plan: any, index: number) => {
-            const isPopular =
-              plans.items.length === 2
-                ? index === 1
-                : index === Math.floor(plans.items.length / 2); // Mark middle/higher priced plan as popular
-            const price = plan.prices[0]; // Use first price for display
-            // More robust current plan detection - prioritize amount matching due to price ID inconsistencies
-            const isCurrentPlan =
-              userSubscription?.status === "active" &&
-              userSubscription?.amount === price.amount;
-
-            return (
-              <Card
-                key={plan.id}
-                className={`relative h-fit ${
-                  isPopular ? "border-primary" : ""
-                } ${isCurrentPlan ? "border-green-500 bg-green-50/50" : ""}`}
+        <div className="mt-8 flex justify-center md:mt-16">
+          <PricingCard.Card className="max-w-lg w-full">
+            <PricingCard.Header>
+              <PricingCard.Plan>
+                <PricingCard.PlanName>
+                  <Users aria-hidden="true" />
+                  <span className="text-muted-foreground">Individual license</span>
+                </PricingCard.PlanName>
+                <PricingCard.Badge>One‑time purchase</PricingCard.Badge>
+              </PricingCard.Plan>
+              <PricingCard.Price>
+                <PricingCard.MainPrice>$79.00</PricingCard.MainPrice>
+                <PricingCard.Period>/ one‑time</PricingCard.Period>
+                <PricingCard.OriginalPrice>$125.00</PricingCard.OriginalPrice>
+              </PricingCard.Price>
+              <Button
+                className="w-full font-semibold text-white bg-gradient-to-b from-orange-500 to-orange-600 shadow-[0_10px_25px_rgba(255,115,0,0.3)]"
+                onClick={onBuy}
+                disabled={isLoading}
               >
-                {isPopular && !isCurrentPlan && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                      Most Popular
-                    </span>
-                  </div>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Redirecting…</span>
+                  </>
+                ) : (
+                  <span>Buy Kaizen</span>
                 )}
-                {isCurrentPlan && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Current Plan
+              </Button>
+            </PricingCard.Header>
+
+            <PricingCard.Body>
+              <PricingCard.List>
+                {features.map((item, idx) => (
+                  <PricingCard.ListItem key={idx}>
+                    <span className="mt-0.5">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" aria-hidden="true" />
                     </span>
-                  </div>
-                )}
-
-                <CardHeader>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold">
-                      ${(price.amount / 100).toFixed(0)}
-                    </span>
-                    <span className="text-muted-foreground">
-                      /{price.interval || "month"}
-                    </span>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>All features included</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Priority support</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Cancel anytime</span>
-                  </div>
-                  {plan.isRecurring && (
-                    <div className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-green-500" />
-                      <span>Recurring billing</span>
-                    </div>
-                  )}
-                </CardContent>
-
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    onClick={() => handleSubscribe(price.id)}
-                    disabled={loadingPriceId === price.id}
-                    variant={isCurrentPlan ? "secondary" : "default"}
-                  >
-                    {loadingPriceId === price.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Setting up checkout...
-                      </>
-                    ) : isCurrentPlan ? (
-                      "✓ Current Plan"
-                    ) : userSubscription?.status === "active" ? (
-                      (() => {
-                        const currentAmount = userSubscription.amount || 0;
-                        const newAmount = price.amount;
-
-                        if (newAmount > currentAmount) {
-                          return `Upgrade (+$${(
-                            (newAmount - currentAmount) /
-                            100
-                          ).toFixed(0)}/mo)`;
-                        } else if (newAmount < currentAmount) {
-                          return `Downgrade (-$${(
-                            (currentAmount - newAmount) /
-                            100
-                          ).toFixed(0)}/mo)`;
-                        } else {
-                          return "Manage Plan";
-                        }
-                      })()
-                    ) : (
-                      "Get Started"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-      </div>
-
-      <div className="mt-12 text-center">
-        <p className="text-muted-foreground">
-          Need a custom plan?{" "}
-          <span className="text-primary cursor-pointer hover:underline">
-            Contact us
-          </span>
-        </p>
-        {error && (
-          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800 text-center">{error}</p>
-          </div>
-        )}
-
-        {userSubscription &&
-          !plans?.items.some(
-            (plan: any) => plan.prices[0].id === userSubscription.polarPriceId
-          ) && (
-            <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-md max-w-md mx-auto">
-              <p className="text-amber-800 text-center text-sm">
-                You have an active subscription that's not shown above. Contact
-                support for assistance.
-              </p>
-            </div>
-          )}
+                    <span>{item}</span>
+                  </PricingCard.ListItem>
+                ))}
+              </PricingCard.List>
+            </PricingCard.Body>
+          </PricingCard.Card>
+        </div>
       </div>
     </section>
   );

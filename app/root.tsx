@@ -86,6 +86,21 @@ export const links: Route.LinksFunction = () => [
     as: "image",
     type: "image/png",
   },
+  // Preload homepage logo PNGs that were slow to decode on first paint
+  {
+    rel: "preload",
+    href: "/clerk.png",
+    as: "image",
+    type: "image/png",
+    fetchPriority: "high",
+  },
+  {
+    rel: "preload",
+    href: "/resend-icon-black.png",
+    as: "image",
+    type: "image/png",
+    fetchPriority: "high",
+  },
   
   // Icon
   {

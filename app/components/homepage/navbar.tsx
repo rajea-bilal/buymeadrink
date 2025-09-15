@@ -117,7 +117,7 @@ export const Navbar = ({
           {/* <div className="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 text-xs z-10">
             Debug: {isScrolled ? 'SCROLLED' : 'NOT SCROLLED'}
           </div> */}
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:flex-nowrap lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
               <Link
                 to="/"
@@ -138,13 +138,13 @@ export const Navbar = ({
               </button>
             </div>
 
-            <div className="absolute inset-0 m-auto hidden size-fit lg:block">
-              <ul className="flex gap-8 text-sm">
+            <div className="hidden lg:flex flex-1 items-center justify-center">
+              <ul className="flex h-8 items-center gap-8 text-sm leading-none">
                 {menuItems.map((item, index) => (
                   <li key={index}>
                     <div
                       onClick={() => handleNavClick(item.href)}
-                      className="hover:cursor-pointer text-muted-foreground block duration-150 transition-colors"
+                      className="hover:cursor-pointer text-muted-foreground flex items-center h-8 duration-150 transition-colors"
                     >
                       <span>{item.name}</span>
                     </div>
@@ -153,7 +153,7 @@ export const Navbar = ({
               </ul>
             </div>
 
-            <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+            <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
               <div className="lg:hidden">
                 <ul className="space-y-6 text-base">
                   {menuItems.map((item, index) => (
@@ -174,7 +174,7 @@ export const Navbar = ({
                   <span className="hidden sm:inline">Private Repo</span>
                 </div>
                 {authEnabled && loaderData?.isSignedIn ? (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 self-center">
                     <Button 
                       asChild 
                       size="sm" 
