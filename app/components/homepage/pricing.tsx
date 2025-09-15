@@ -24,8 +24,9 @@ export default function Pricing({ loaderData }: { loaderData: any }) {
 
   const features = [
     "Save 40+ hours of setup and configuration",
-    "Production‑grade boilerplate with documentation",
+    "Production‑grade boilerplate with crystal-clear documentation",
     "Everything pre‑wired so you can focus on your product",
+    "Private Discord Community Access for support and feedback",
     "Unlimited projects",
   ];
 
