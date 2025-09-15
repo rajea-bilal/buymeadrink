@@ -80,7 +80,7 @@ export default function IntegrationsSection({
                 Kaizen
               </h2>
               <p className="text-muted-foreground text-3xl">
-                High-Performance React Router v7 Boilerplate. Available for purchase or to Accelerator members.
+                High-Performance React Router v7 Boilerplate. Available for purchase or free for Accelerator members.
               </p>
 
               <div className="flex gap-2 justify-center sm:justify-start">
@@ -100,7 +100,7 @@ export default function IntegrationsSection({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    🚀 Join Accelerator to get access
+                    🚀 Join Accelerator to get free access
                   </Link>
                 </Button>
               </div>
