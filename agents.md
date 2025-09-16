@@ -1,83 +1,19 @@
-# AGENTS.md
+# Repository Guidelines
 
-When you need to call tools from the shell, use this rubric:
+## Project Structure & Module Organization
+The `app/` directory is the React Router v7 application: route modules live in `app/routes/`, shared UI in `app/components/`, hooks in `app/hooks/`, utilities in `app/utils/`, and client helpers in `app/lib/`. The `convex/` folder contains serverless functions, schema definitions, and Convex configuration. Static assets reside in `public/`, deployment outputs in `build/`, and operational runbooks in `guides/`. Configuration defaults sit in `config.example.ts`; copy to `config.ts` for local overrides.
 
-- Find files: `fd`
-- Find text: `rg` (ripgrep)
-- Find code structure (TS/TSX): `ast-grep`
-  - Default to TypeScript:
-    - `.ts` → `ast-grep --lang ts -p '<pattern>'`
-    - `.tsx` (React) → `ast-grep --lang tsx -p '<pattern>'`
-  - For other languages, set `--lang` appropriately (e.g., `--lang rust`).
-- Select among matches: pipe to `fzf`
-- JSON: `jq`
-- YAML/XML: `yq`
+## Build, Test, and Development Commands
+Run `npm run dev` for the full-stack dev server with hot reload. `npm run build` creates the production bundle under `build/`. Use `npm run start` to serve the built output locally. Verify types and regenerate React Router loaders with `npm run typecheck`, which runs `react-router typegen` before `tsc`.
 
-## Quick examples
+## Coding Style & Naming Conventions
+Write TypeScript everywhere, using ES modules and strict typing. Prefer PascalCase for React components, camelCase for functions and variables, and kebab-case for route filenames (e.g., `pricing.tsx`). Co-locate loader/action logic with their route module. Favor Tailwind utility classes over custom CSS; place shared design tokens in `app/app.css` only when unavoidable. Keep Convex queries and mutations in files that match their domain (`subscriptions.ts`, `users.ts`).
 
-```bash
-# Files
-fd "router" app
+## Testing Guidelines
+The project currently relies on type safety and manual QA. When adding complex logic, scaffold Vitest + React Testing Library tests beside the code (e.g., `Component.test.tsx`) and gate networked code behind mocks. At minimum, run `npm run typecheck` before every PR and include screenshots or recordings for UI changes.
 
-# Text
-rg -n "useLoaderData" app | fzf
+## Commit & Pull Request Guidelines
+Follow the existing history pattern of short, imperative commit subjects ("Update integrations links text"). Group related changes together and avoid unrelated refactors. Pull requests should include a concise summary, linked issue or Linear ticket, and a checklist of executed commands. Mention any new environment variables, schema migrations, or Convex changes, and attach proof of testing (command output, screenshots).
 
-# Code structure (TypeScript functions named loader)
-ast-grep --lang ts -p 'function loader($$$)' app | fzf
-
-# Code structure (TSX components using useFetcher)
-ast-grep --lang tsx -p 'useFetcher($$$)' app | fzf
-
-# JSON
-jq '.scripts' package.json
-
-# YAML
-yq '.services[].image' docker-compose.yml
-```
-
-## Notes
-- Prefer exact structure queries with `ast-grep` before falling back to `rg`.
-- Combine `fd` + `rg` for speed: `rg pattern $(fd -e ts -e tsx app)`.
-- Respect this project’s React Router v7 rules. If you see missing `./+types/[route]` imports, run `npm run typecheck`.
-
-# AGENTS.md
-
-When you need to call tools from the shell, use this rubric:
-
-- Find files: `fd`
-- Find text: `rg` (ripgrep)
-- Find code structure (TS/TSX): `ast-grep`
-  - Default to TypeScript:
-    - `.ts` → `ast-grep --lang ts -p '<pattern>'`
-    - `.tsx` (React) → `ast-grep --lang tsx -p '<pattern>'`
-  - For other languages, set `--lang` appropriately (e.g., `--lang rust`).
-- Select among matches: pipe to `fzf`
-- JSON: `jq`
-- YAML/XML: `yq`
-
-## Quick examples
-
-```bash
-# Files
-fd "router" app
-
-# Text
-rg -n "useLoaderData" app | fzf
-
-# Code structure (TypeScript functions named loader)
-ast-grep --lang ts -p 'function loader($$$)' app | fzf
-
-# Code structure (TSX components using useFetcher)
-ast-grep --lang tsx -p 'useFetcher($$$)' app | fzf
-
-# JSON
-jq '.scripts' package.json
-
-# YAML
-yq '.services[].image' docker-compose.yml
-```
-
-## Notes
-- Prefer exact structure queries with `ast-grep` before falling back to `rg`.
-- Combine `fd` + `rg` for speed: `rg pattern $(fd -e ts -e tsx app)`.
-- Respect this project’s React Router v7 rules. If you see missing `./+types/[route]` imports, run `npm run typecheck`.
+## React Router & Convex Tips
+Always import route types from `./+types/[route]` when accessing loader data, and rerun `npm run typecheck` if those files go stale. Convex deployments expect the schema in `convex/schema.ts`; keep mutations idempotent and document new functions in `convex/README.md`.
