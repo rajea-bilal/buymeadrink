@@ -24,15 +24,20 @@ export default function Pricing({ loaderData }: { loaderData: any }) {
 
   const features = [
     "Save 40+ hours of setup and configuration",
-    "Production‑grade boilerplate with crystal-clear documentation",
-    "Everything pre‑wired so you can focus on your product",
+    "Production-grade codebase with crystal-clear documentation",
     "Private Discord Community Access for support and feedback",
-    "Unlimited projects",
+    "Access to custom tools to help you ship faster",
+    "Updated weekly. Build Unlimited projects",
   ];
 
   return (
     <section id="pricing" className="py-16 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-3xl mb-8">
+          <div className="rounded-xl border bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 px-4 py-3 text-center text-sm">
+            <span className="font-medium">Early-bird pricing:</span> Price increases after the first 10 purchases.
+          </div>
+        </div>
         <div className="mx-auto max-w-2xl space-y-2 text-center">
           <h1 className="text-center text-4xl font-semibold lg:text-5xl">
             Lifetime access

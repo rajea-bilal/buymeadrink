@@ -1,6 +1,7 @@
 {
   "name": "kaizen",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
   "type": "module",
   "scripts": {
     "build": "react-router build",

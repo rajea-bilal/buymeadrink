@@ -10,6 +10,7 @@ const ContentSection = lazy(() => import("~/components/homepage/content"));
 const CoreFeaturesSection = lazy(() => import("~/components/homepage/core-features"));
 const ConvexComparison = lazy(() => import("~/components/homepage/convex-comparison").then(m => ({ default: m.ConvexComparison })));
 const Pricing = lazy(() => import("~/components/homepage/pricing"));
+const InhouseTools = lazy(() => import("~/components/homepage/inhouse-tools"));
 const FAQ = lazy(() => import("~/components/homepage/faq"));
 const Footer = lazy(() => import("~/components/homepage/footer"));
 
@@ -117,6 +118,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       </Suspense>
       <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6"><PricingSkeleton /><PricingSkeleton /></div>}>
         <Pricing loaderData={loaderData} />
+      </Suspense>
+      <div className="my-6 flex justify-center">
+        <div
+          aria-hidden
+          className="size-12 rounded-full border bg-background text-muted-foreground shadow-sm grid place-items-center text-2xl font-semibold"
+        >
+          +
+        </div>
+      </div>
+      <Suspense fallback={<ContentSkeleton />}>
+        <InhouseTools />
       </Suspense>
       <Suspense fallback={<ContentSkeleton />}>
         <FAQ />
