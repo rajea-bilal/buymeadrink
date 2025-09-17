@@ -34,7 +34,7 @@ const tools: Array<Tool> = [
     image: "/inhouse-tools/marketing.png",
   },
   {
-    title: "Design Components Library",
+    title: "UI Components Library",
     href: "https://design.codeandcreed.tech",
     description:
       "Large database of pre‑built UI components. Design beautiful pages seriously fast.",

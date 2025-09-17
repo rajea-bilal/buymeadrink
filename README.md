@@ -365,6 +365,16 @@ Built with ❤️ using React Router v7, Convex, Clerk, Polar.sh, and OpenAI.
 ### Production
 - `FRONTEND_URL` - Your production frontend URL
 
+## Access Code for Partner Sites
+
+Use this 6‑digit CODE to unlock the Design, Marketing, Founder, and Tools sites after purchase:
+
+```
+ACCESS_CODE: 613902
+
+PLEASE DO NOT SHARE THIS CODE WITH ANYONE.
+```
+
 ## Project Structure
 
 ```
