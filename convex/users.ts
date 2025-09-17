@@ -61,6 +61,7 @@ export const upsertUser = mutation({
       tokenIdentifier: identity.subject,
     });
 
+    // Schedule welcome email; internal function handles config gating
     await ctx.scheduler.runAfter(0, internal.sendEmails.sendWelcomeEmail, {
       email: identity.email!,
       name: identity.name!,

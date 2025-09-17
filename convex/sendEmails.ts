@@ -8,6 +8,15 @@ export const resend: Resend = new Resend(components.resend, {
   testMode: false, // Set to false to allow sending to real email addresses
 });
 
+// Determine whether email sending should be attempted at all.
+// Honors project feature flags synced into env and also falls back to API key presence.
+const isEmailEnabled = (): boolean => {
+  if (process.env.EMAIL_ENABLED === "true") return true;
+  if (process.env.RESEND_ENABLED === "true") return true;
+  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.length > 0) return true;
+  return false;
+};
+
 export const handleEmailEvent = internalMutation({
   args: {
     id: vEmailId,
@@ -68,6 +77,11 @@ export const sendTestEmailToAddress = action({
 export const sendWelcomeEmail = internalMutation({
   args: { email: v.string(), name: v.string() },
   handler: async (ctx, { email, name }) => {
+    // Respect config toggle: do not send if email feature disabled
+    if (!isEmailEnabled()) {
+      console.log("📭 Email disabled by config; skipping welcome email for", email);
+      return;
+    }
     const fromEmail = process.env.SENDER_EMAIL || "welcome@resend.dev";
     const companyName = process.env.COMPANY_NAME || "Kaizen";
     
