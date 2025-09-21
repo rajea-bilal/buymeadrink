@@ -1,3 +1,7 @@
+YOU MUST NEVER START THE DEV SERVER UNLESS THE USER HAS TOLD YOU TO.
+Never run pm run dev, pm start, or the equivalent "start or build" command.
+The user is running the dev server locally and if you do that you could mess up the dev server.
+
 # Claude Code Best Practices & Development Rules
 
 General best practices and development guidelines for working with Claude Code across any project.
