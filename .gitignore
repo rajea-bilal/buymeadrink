@@ -6,3 +6,6 @@
 /build/
 
 .env.local
+
+convex-stripe-demo/
+tanstack-start-convex-better-auth-demo/

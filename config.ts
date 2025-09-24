@@ -20,13 +20,14 @@
 
 export interface AppConfig {
   features: {
-    auth: boolean;        // Enable Clerk user authentication
-    payments: boolean;    // Enable Polar.sh subscription billing  
-    convex: boolean;      // Enable Convex real-time database
-    email: boolean;       // Enable Resend email via Convex component
-    monitoring: boolean;  // Enable error reporting and monitoring
+    auth: boolean;        // Enable Authentication
+    payments: boolean;    // Enable Billing  
+    convex: boolean;      // Enable Convex
+    email: boolean;       // Enable Email
+    monitoring: boolean;  // Enable Monitoring
   };
   services: {
+    betterAuth: { enabled: true, mode: "b2c" },
     clerk?: {
       enabled: boolean;
       publishableKey?: string;
@@ -42,6 +43,11 @@ export interface AppConfig {
       enabled: boolean;
       deployment?: string;
       url?: string;
+    };
+    stripe?: {
+      enabled: boolean;
+      apiKey?: string;
+      webhookSecret?: string;
     };
     resend?: {
       enabled: boolean;
@@ -96,13 +102,17 @@ const getEnvVar = (key: string): string | undefined => {
 
 export const config: AppConfig = {
   features: {
-    auth: false,        // Enable/disable Clerk authentication
-    payments: true,    // Enable/disable Polar.sh payments
-    convex: false,      // Enable/disable Convex backend
-    email: false,      // Enable/disable Resend email
-    monitoring: false,  // Enable/disable error reporting and monitoring
+    auth: false,        // Enable/disable Authentication
+    payments: true,    // Enable/disable Billing
+    convex: false,      // Enable/disable Convex
+    email: false,      // Enable/disable Email
+    monitoring: false,  // Enable/disable Monitoring
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: {
       enabled: false,
       publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
@@ -115,9 +125,14 @@ export const config: AppConfig = {
       webhookSecret: getEnvVar('POLAR_WEBHOOK_SECRET'),
     },
     convex: {
-      enabled: false,
+      enabled: true,
       deployment: getEnvVar('CONVEX_DEPLOYMENT'),
       url: getEnvVar('VITE_CONVEX_URL'),
+    },
+    stripe: {
+      enabled: false,
+      apiKey: getEnvVar('STRIPE_API_KEY'),
+      webhookSecret: getEnvVar('STRIPE_WEBHOOK_SECRET'),
     },
     resend: {
       enabled: false,
