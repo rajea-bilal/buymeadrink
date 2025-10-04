@@ -104,7 +104,7 @@ export const config: AppConfig = {
   features: {
     auth: false,        // Enable/disable Authentication
     payments: true,    // Enable/disable Billing
-    convex: false,      // Enable/disable Convex
+    convex: true,      // Enable/disable Convex
     email: false,      // Enable/disable Email
     monitoring: false,  // Enable/disable Monitoring
   },

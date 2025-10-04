@@ -21,6 +21,9 @@ const routes: RouteConfig = [
   route("pricing", "routes/pricing.tsx"),
   route("success", "routes/success.tsx"),
   
+  // Profile routes (always included)
+  route("profile/:handle", "routes/profile.$handle.tsx"),
+  
   // Dashboard routes (always included)
   layout("routes/dashboard/layout.tsx", [
     route("dashboard", "routes/dashboard/index.tsx"),

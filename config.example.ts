@@ -16,6 +16,10 @@ export const fullSaasConfig: AppConfig = {
     monitoring: true,
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: {
       enabled: true,
       publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
@@ -60,6 +64,10 @@ export const frontendOnlyConfig: AppConfig = {
     monitoring: false,
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: { enabled: false },
     polar: { enabled: false },
     convex: { enabled: false },
@@ -84,6 +92,10 @@ export const authOnlyConfig: AppConfig = {
     monitoring: false,
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: {
       enabled: true,
       publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
@@ -119,6 +131,10 @@ export const paymentsOnlyConfig: AppConfig = {
     monitoring: false,
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: { enabled: false },
     polar: {
       enabled: true,
@@ -152,6 +168,10 @@ export const staticConfig: AppConfig = {
     monitoring: false,
   },
   services: {
+    betterAuth: {
+      enabled: true,
+      mode: "b2c",
+    },
     clerk: { enabled: false },
     polar: { enabled: false },
     convex: { enabled: false },

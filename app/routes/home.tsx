@@ -4,6 +4,8 @@ import { api } from "../../convex/_generated/api";
 import type { Route } from "./+types/home";
 import { Suspense, lazy } from 'react';
 import { ContentSkeleton, FeatureSkeleton, PricingSkeleton } from '~/components/ui/skeleton';
+import { Link } from 'react-router';
+import { Button } from '~/components/ui/button';
 
 // Lazy load components below the fold
 const ContentSection = lazy(() => import("~/components/homepage/content"));
@@ -107,6 +109,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <Integrations loaderData={loaderData} />
+      
+      {/* BuyMeADrink Demo Section */}
+      <section className="py-20 bg-gradient-to-b from-slate-950 to-slate-900">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            Support Your Favorite Creators
+          </h2>
+          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            See how BuyMeADrink makes it easy for fans to support athletes and creators with gifts, subscriptions, and more.
+          </p>
+          <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6">
+            <Link to="/profile/conor">
+              View Demo Creator Profile →
+            </Link>
+          </Button>
+        </div>
+      </section>
+      
       <Suspense fallback={<ContentSkeleton />}>
         <ContentSection />
       </Suspense>
