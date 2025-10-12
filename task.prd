@@ -1,0 +1,154 @@
+# UFC Fighter Real Data Integration PRD
+
+## Overview
+Replace seeded UFC fighter data with real-time data from external APIs to populate profile.$handle.tsx pages with accurate fighter information including stats, social media, and performance metrics.
+
+## Current State
+- Profile pages use seeded data from Convex database
+- Static fighter information with no real-time updates
+- Manual data entry required for new fighters
+
+## Target State
+- Real-time UFC fighter data integration
+- Automatic profile population from external APIs
+- Live stats, social media, and performance updates
+
+## API Research Results
+
+### Recommended Primary API: API-Sports MMA
+- **Cost**: $10/month (100 free requests/day for testing)
+- **Coverage**: All UFC events, fighters, live results
+- **Data**: Fighter stats, records, upcoming bouts, historical data
+- **Reliability**: Daily updates, 72-hour event addition guarantee
+
+### Backup API: SportsDataIO MMA
+- **Cost**: Contact for pricing (free trial available)
+- **Coverage**: Real-time MMA coverage
+- **Data**: Comprehensive fight data, unlimited API calls
+- **Reliability**: Enterprise-grade, real-time updates
+
+## Implementation Plan
+
+### Phase 1: API Integration Setup
+1. **Create API service layer**
+   - `app/services/ufc-api.ts` - API client for fighter data
+   - `convex/lib/ufc-sync.ts` - Convex functions for data sync
+   - Environment variables: `UFC_API_KEY`, `UFC_API_BASE_URL`
+
+2. **Database schema updates**
+   - Add `externalFighterId` field to users table
+   - Create `fighterStats` table for cached API data
+   - Add `lastSyncAt` timestamp for data freshness
+
+### Phase 2: Data Fetching & Caching
+1. **Fighter lookup system**
+   - Map profile handles to UFC fighter IDs
+   - Fallback to name-based search if no direct mapping
+   - Store mapping in `fighterMappings` table
+
+2. **Caching strategy**
+   - Cache fighter data for 24 hours
+   - Background sync job every 6 hours
+   - Immediate refresh for active fight weeks
+
+### Phase 3: Profile Page Integration
+1. **Update profile.$handle.tsx loader**
+   - Fetch real fighter data from cache
+   - Fallback to seeded data if API unavailable
+   - Merge API data with user-generated content
+
+2. **Real-time updates**
+   - WebSocket updates during live events
+   - Auto-refresh fighter stats post-fight
+   - Social media follower count updates
+
+### Phase 4: Social Media Integration
+1. **Fighter social handles**
+   - Extract from API where available
+   - Manual override system for custom handles
+   - Social media metrics tracking
+
+2. **Content aggregation**
+   - Latest posts from verified accounts
+   - Fight announcements and updates
+   - Training content and behind-scenes
+
+## Technical Requirements
+
+### API Integration
+```typescript
+// app/services/ufc-api.ts
+interface UFCFighter {
+  id: string;
+  name: string;
+  record: { wins: number; losses: number; draws: number };
+  stats: FighterStats;
+  socialMedia: SocialHandles;
+  nextFight?: UpcomingFight;
+}
+
+// Convex schema addition
+fighterStats: defineTable({
+  fighterId: v.string(),
+  data: v.object({...}),
+  lastSyncAt: v.number(),
+  source: v.string(), // "api-sports" | "sportsdata"
+})
+```
+
+### Environment Variables
+```
+UFC_API_KEY=your_api_key
+UFC_API_BASE_URL=https://api-sports.io/v1/mma
+UFC_SYNC_INTERVAL_HOURS=6
+```
+
+### Convex Functions
+- `getFighterData(handle: string)` - Get cached fighter data
+- `syncFighterData(fighterId: string)` - Sync from API
+- `searchFighterByName(name: string)` - Name-based lookup
+
+## Data Flow
+1. User visits `/profile/conor-mcgregor`
+2. Loader checks `fighterMappings` for UFC fighter ID
+3. Fetch cached data from `fighterStats` table
+4. If stale (>24h) or missing, trigger background sync
+5. Return combined data (API + user content)
+6. Display real-time fighter information
+
+## Error Handling
+- API rate limit protection with exponential backoff
+- Graceful fallback to cached/seeded data
+- Error logging for failed API calls
+- Manual data override for critical fighters
+
+## Success Metrics
+- 95% uptime for fighter data availability
+- <500ms profile page load time
+- 24-hour maximum data staleness
+- Zero manual data entry for top 100 fighters
+
+## Implementation Tasks
+1. Set up API-Sports account and test endpoints
+2. Create UFC API service layer
+3. Update Convex schema and functions
+4. Implement caching and sync logic
+5. Update profile page loader
+6. Add background sync job
+7. Test with real fighter data
+8. Deploy and monitor
+
+## Timeline
+- Phase 1: 2 days (API setup)
+- Phase 2: 3 days (caching system)
+- Phase 3: 2 days (profile integration)
+- Phase 4: 2 days (social media)
+- Testing & deployment: 1 day
+
+**Total: 10 days**
+
+## Risks & Mitigation
+- **API rate limits**: Implement caching and batch requests
+- **API costs**: Monitor usage, implement request optimization
+- **Data accuracy**: Cross-reference multiple sources for critical data
+- **Fighter name matching**: Manual mapping table for edge cases

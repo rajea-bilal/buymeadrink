@@ -33,7 +33,8 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Read(//Users/RajeaBilal/Desktop/Inspiration/**)",
-      "Read(//var/folders/vm/jfr4258x1m124v9ztbdz6lk80000gn/T/TemporaryItems/NSIRD_screencaptureui_932gAt/**)"
+      "Read(//var/folders/vm/jfr4258x1m124v9ztbdz6lk80000gn/T/TemporaryItems/NSIRD_screencaptureui_932gAt/**)",
+      "Bash(npx convex run:*)"
     ],
     "deny": []
   }

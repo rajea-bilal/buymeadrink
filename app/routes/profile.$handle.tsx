@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { ClientOnly } from "~/components/ClientOnly";
 import { ShareButton } from "~/components/ShareButton";
 import { ProfileTabs } from "~/components/ProfileTabs";
+import { StripeTestButton, StripeConnectionTest } from "~/components/StripeTestButton";
 
 const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
 
@@ -390,6 +391,19 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       )}
+
+      {/* Stripe Test Zone */}
+      <div className="py-8 border-b border-[#2a2a2a]">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <ClientOnly fallback={<div className="animate-pulse bg-[#232323] h-32 rounded-lg"></div>}>
+            <StripeConnectionTest />
+            <div className="bg-[#232323] border border-[#2a2a2a] rounded-lg p-6">
+              <h3 className="text-white font-semibold mb-4">🧪 Test Gift Purchase</h3>
+              <StripeTestButton creatorHandle={creator.handle} />
+            </div>
+          </ClientOnly>
+        </div>
+      </div>
 
       {/* Latest Posts */}
       {creator.posts.length > 0 && (

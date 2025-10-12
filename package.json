@@ -30,6 +30,8 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@react-router/node": "^7.5.3",
     "@react-router/serve": "^7.5.3",
+    "@stripe/react-stripe-js": "^5.0.0",
+    "@stripe/stripe-js": "^8.0.0",
     "@tabler/icons-react": "^3.34.0",
     "@tanstack/react-table": "^8.21.3",
     "@tsparticles/engine": "^3.8.1",
@@ -52,6 +54,7 @@
     "react-router": "^7.5.3",
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
+    "stripe": "^19.1.0",
     "tailwind-merge": "^3.3.0",
     "vaul": "^1.1.2",
     "zod": "^3.25.39"

@@ -103,9 +103,9 @@ const getEnvVar = (key: string): string | undefined => {
 export const config: AppConfig = {
   features: {
     auth: false,        // Enable/disable Authentication
-    payments: true,    // Enable/disable Billing
-    convex: true,      // Enable/disable Convex
-    email: false,      // Enable/disable Email
+    payments: true,     // Enable/disable Billing
+    convex: true,       // Enable/disable Convex
+    email: true,        // Enable/disable Email
     monitoring: false,  // Enable/disable Monitoring
   },
   services: {
@@ -130,12 +130,12 @@ export const config: AppConfig = {
       url: getEnvVar('VITE_CONVEX_URL'),
     },
     stripe: {
-      enabled: false,
+      enabled: true,
       apiKey: getEnvVar('STRIPE_API_KEY'),
       webhookSecret: getEnvVar('STRIPE_WEBHOOK_SECRET'),
     },
     resend: {
-      enabled: false,
+      enabled: true,
       apiKey: getEnvVar('RESEND_API_KEY'),
       webhookSecret: getEnvVar('RESEND_WEBHOOK_SECRET'),
     },

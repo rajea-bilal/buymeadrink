@@ -361,4 +361,21 @@ export const getLeaderboard = query({
   },
 });
 
+/**
+ * Helper functions for payments (regular queries for now)
+ */
+export const getGiftById = query({
+  args: { giftId: v.id("gifts") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.giftId);
+  },
+});
+
+export const getCreatorById = query({
+  args: { creatorId: v.id("creators") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.creatorId);
+  },
+});
+
 
