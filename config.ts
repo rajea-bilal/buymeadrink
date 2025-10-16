@@ -27,7 +27,7 @@ export interface AppConfig {
     monitoring: boolean;  // Enable Monitoring
   };
   services: {
-    betterAuth: { enabled: true, mode: "b2c" },
+    betterAuth?: { enabled: boolean, mode: "b2c" },
     clerk?: {
       enabled: boolean;
       publishableKey?: string;
@@ -102,7 +102,7 @@ const getEnvVar = (key: string): string | undefined => {
 
 export const config: AppConfig = {
   features: {
-    auth: false,        // Enable/disable Authentication
+    auth: true,         // Enable/disable Authentication
     payments: true,     // Enable/disable Billing
     convex: true,       // Enable/disable Convex
     email: true,        // Enable/disable Email
@@ -110,11 +110,11 @@ export const config: AppConfig = {
   },
   services: {
     betterAuth: {
-      enabled: true,
+      enabled: false,
       mode: "b2c",
     },
     clerk: {
-      enabled: false,
+      enabled: true,
       publishableKey: getEnvVar('VITE_CLERK_PUBLISHABLE_KEY'),
       secretKey: getEnvVar('CLERK_SECRET_KEY'),
     },
@@ -160,7 +160,7 @@ export const config: AppConfig = {
     showPricing: true,    // Show pricing page and components
     showDashboard: true,  // Show dashboard routes
     showChat: true,       // Show AI chat functionality
-    showAuth: false,       // Show sign-in/sign-up routes
+    showAuth: true,       // Show sign-in/sign-up routes
   },
 };
 

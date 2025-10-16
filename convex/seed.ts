@@ -200,6 +200,7 @@ export const seedConorProfile = mutation({
           ...order,
           quantity: 1,
           unitPrice: order.totalAmount,
+          amount: order.totalAmount, // Required field for Task 1 compatibility
           currency: "USD",
           status: "completed",
         });
@@ -412,6 +413,7 @@ export const addMissingDataToConor = mutation({
           ...order,
           quantity: 1,
           unitPrice: order.totalAmount,
+          amount: order.totalAmount, // Required field for Task 1 compatibility
           currency: "USD",
           status: "completed",
         });

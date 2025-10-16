@@ -96,7 +96,7 @@ export const Navbar = ({
     ? "/dashboard"
     : !loaderData?.isSignedIn
       ? "/sign-up"
-      : "/dashboard";
+      : "/creatordashboard"; // Default to creator dashboard for signed-in users
 
   const dashboardText = "Dashboard";
 

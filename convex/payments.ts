@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { action, mutation } from "./_generated/server";
+import { api, internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 import Stripe from "stripe";
 
 /**
@@ -14,13 +15,13 @@ export const createCheckoutSession = action({
     fanName: v.optional(v.string()),
     message: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ sessionId: string; url: string | null }> => {
     const stripe = new Stripe(process.env.STRIPE_API_KEY!, {
       apiVersion: "2025-09-30.clover",
     });
 
     // Get gift and creator details using the public queries
-    const [gift, creator] = await Promise.all([
+    const [gift, creator]: [any, any] = await Promise.all([
       ctx.runQuery(api.creators.getGiftById, { giftId: args.giftId }),
       ctx.runQuery(api.creators.getCreatorById, { creatorId: args.creatorId }),
     ]);
@@ -33,7 +34,7 @@ export const createCheckoutSession = action({
     }
 
     try {
-      const session = await stripe.checkout.sessions.create({
+      const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
           {
@@ -81,13 +82,13 @@ export const createTestCheckoutSession = action({
     title: v.string(),
     creatorHandle: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ sessionId: string; url: string | null }> => {
     const stripe = new Stripe(process.env.STRIPE_API_KEY!, {
       apiVersion: "2025-09-30.clover",
     });
 
     try {
-      const session = await stripe.checkout.sessions.create({
+      const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
           {
@@ -123,11 +124,91 @@ export const createTestCheckoutSession = action({
 });
 
 /**
+ * Check if a gift purchase already exists for a session
+ */
+export const checkExistingPurchase = mutation({
+  args: { sessionId: v.string() },
+  returns: v.union(v.id("giftPurchases"), v.null()),
+  handler: async (ctx, { sessionId }) => {
+    const existing = await ctx.db
+      .query("giftPurchases")
+      .filter((q) => q.eq(q.field("stripeSessionId"), sessionId))
+      .first();
+    return existing?._id || null;
+  },
+});
+
+/**
+ * Create a new order record
+ */
+export const createOrder = mutation({
+  args: {
+    creatorId: v.id("creators"),
+    giftId: v.id("gifts"),
+    quantity: v.number(),
+    totalAmount: v.number(),
+    currency: v.string(),
+    fanName: v.optional(v.string()),
+    fanId: v.optional(v.string()),
+    message: v.optional(v.string()),
+    stripeSessionId: v.string(),
+    stripePaymentIntentId: v.optional(v.string()),
+  },
+  returns: v.id("orders"),
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("orders", {
+      creatorId: args.creatorId,
+      giftId: args.giftId,
+      quantity: args.quantity,
+      unitPrice: args.totalAmount / args.quantity, // Calculate unit price
+      totalAmount: args.totalAmount,
+      currency: args.currency,
+      fanName: args.fanName,
+      fanId: args.fanId,
+      message: args.message,
+      stripeCheckoutSessionId: args.stripeSessionId,
+      stripePaymentIntentId: args.stripePaymentIntentId,
+      status: "completed",
+    });
+  },
+});
+
+/**
+ * Create a gift purchase record
+ */
+export const createGiftPurchase = mutation({
+  args: {
+    giftId: v.id("gifts"),
+    creatorId: v.id("creators"),
+    fanName: v.optional(v.string()),
+    message: v.optional(v.string()),
+    quantity: v.number(),
+    amount: v.number(),
+    stripeSessionId: v.string(),
+  },
+  returns: v.id("giftPurchases"),
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("giftPurchases", {
+      giftId: args.giftId,
+      creatorId: args.creatorId,
+      fanName: args.fanName,
+      message: args.message,
+      quantity: args.quantity,
+      amount: args.amount,
+      stripeSessionId: args.stripeSessionId,
+      status: "completed",
+    });
+  },
+});
+
+// confirmGiftCheckout removed - using simplified payment flow for MVP
+
+/**
  * Test Stripe connection
  */
 export const testStripeConnection = action({
   args: {},
-  handler: async () => {
+  handler: async (): Promise<{ success: boolean; accountId?: string; country?: string; currency?: string; error?: string }> => {
     try {
       const stripe = new Stripe(process.env.STRIPE_API_KEY!, {
         apiVersion: "2025-09-30.clover",

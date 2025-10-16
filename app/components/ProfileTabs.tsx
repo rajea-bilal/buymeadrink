@@ -4,9 +4,12 @@ import { ChevronDown, Gift, Users, Mic, Star, Target } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { GiftModal } from "~/components/GiftModal";
 
 interface ProfileTabsProps {
   creator: {
+    handle: string;
+    _id?: string;
     gifts: Array<{
       id: string;
       title: string;
@@ -14,6 +17,7 @@ interface ProfileTabsProps {
       description: string;
       media: string;
       type: string;
+      currency: string;
     }>;
     tiers: Array<{
       id: string;
@@ -49,6 +53,18 @@ interface ProfileTabsProps {
 
 export function ProfileTabs({ creator }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [selectedGift, setSelectedGift] = useState<any>(null);
+  const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+
+  const handleGiftClick = (gift: any) => {
+    setSelectedGift(gift);
+    setIsGiftModalOpen(true);
+  };
+
+  const closeGiftModal = () => {
+    setIsGiftModalOpen(false);
+    setSelectedGift(null);
+  };
 
   const tabs = [
     {

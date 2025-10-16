@@ -1,8 +1,9 @@
 import { Polar } from "@polar-sh/sdk";
 import { v } from "convex/values";
 import { Webhook, WebhookVerificationError } from "standardwebhooks";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { action, httpAction, mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 const createCheckout = async ({
   customerEmail,
@@ -138,6 +139,7 @@ export const getAvailablePlans = action({
 export const createCheckoutSession = action({
   args: {
     priceId: v.string(),
+    tierId: v.optional(v.id("tiers")),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -159,12 +161,29 @@ export const createCheckoutSession = action({
       }
     }
 
+    const tier = args.tierId
+      ? await ctx.runQuery(api.creators.getTierById, { tierId: args.tierId })
+      : await ctx.runQuery(api.creators.findTierByPriceId, {
+          priceId: args.priceId,
+        });
+
+    if (!tier) {
+      throw new Error("Tier not found for this price");
+    }
+
+    const priceId = tier.stripePriceId || args.priceId;
+    if (!priceId) {
+      throw new Error("Tier is missing a linked price ID");
+    }
+
     const checkout = await createCheckout({
       customerEmail: user.email!,
-      productPriceId: args.priceId,
+      productPriceId: priceId,
       successUrl: `${process.env.FRONTEND_URL}/success`,
       metadata: {
         userId: user.tokenIdentifier,
+        tierId: `${tier._id}`,
+        creatorId: `${tier.creatorId}`,
       },
     });
 
@@ -317,7 +336,8 @@ export const handleWebhookEvent = mutation({
 
     switch (eventType) {
       case "subscription.created":
-        console.log("📝 Creating new subscription record for userId:", args.body.data.metadata.userId);
+        const subscriptionMetadata = args.body.data.metadata || {};
+        console.log("📝 Creating new subscription record for userId:", subscriptionMetadata.userId);
         // Insert new subscription
         await ctx.db.insert("subscriptions", {
           polarId: args.body.data.id,
@@ -345,11 +365,75 @@ export const handleWebhookEvent = mutation({
             args.body.data.customer_cancellation_reason || undefined,
           customerCancellationComment:
             args.body.data.customer_cancellation_comment || undefined,
-          metadata: args.body.data.metadata || {},
+          metadata: subscriptionMetadata,
           customFieldData: args.body.data.custom_field_data || {},
           customerId: args.body.data.customer_id,
         });
         console.log("✅ Subscription record created successfully");
+
+        // Schedule fan confirmation email if we have enough detail
+        const userIdFromMetadata = subscriptionMetadata.userId as string | undefined;
+        let fanEmail: string | undefined;
+        let fanName: string | undefined;
+
+        if (userIdFromMetadata) {
+          const fanUser = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", userIdFromMetadata))
+            .unique();
+          fanEmail = fanUser?.email || undefined;
+          fanName = fanUser?.name || undefined;
+        }
+
+        const tierIdFromMetadata =
+          typeof subscriptionMetadata.tierId === "string"
+            ? (subscriptionMetadata.tierId as string)
+            : undefined;
+        const creatorIdFromMetadata =
+          typeof subscriptionMetadata.creatorId === "string"
+            ? (subscriptionMetadata.creatorId as string)
+            : undefined;
+
+        let tierDoc = null;
+        if (tierIdFromMetadata) {
+          tierDoc = await ctx.db.get(tierIdFromMetadata as Id<"tiers">);
+        }
+
+        if (!tierDoc && args.body.data.price_id) {
+          tierDoc = await ctx.db
+            .query("tiers")
+            .filter((q) => q.eq(q.field("stripePriceId"), args.body.data.price_id))
+            .first();
+        }
+
+        let creatorDoc = null;
+        if (tierDoc) {
+          creatorDoc = await ctx.db.get(tierDoc.creatorId);
+        } else if (creatorIdFromMetadata) {
+          creatorDoc = await ctx.db.get(creatorIdFromMetadata as Id<"creators">);
+        }
+
+        if (fanEmail && tierDoc && creatorDoc) {
+          await ctx.scheduler.runAfter(
+            0,
+            internal.sendEmails.sendTierSignupEmail,
+            {
+              fanEmail,
+              fanName: fanName || undefined,
+              creatorName: creatorDoc.name,
+              tierName: tierDoc.name,
+              price: tierDoc.price,
+              currency: tierDoc.currency,
+              perks: tierDoc.perks,
+            }
+          );
+        } else {
+          console.log("ℹ️ Skipping tier signup email; missing details", {
+            hasFanEmail: !!fanEmail,
+            hasTier: !!tierDoc,
+            hasCreator: !!creatorDoc,
+          });
+        }
         break;
 
       case "subscription.updated":

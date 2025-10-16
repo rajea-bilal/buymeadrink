@@ -1,36 +1,43 @@
 import type { Route } from "./+types/profile.$handle";
+import { useEffect, useState } from "react";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
+import { useAction, useQuery } from "convex/react";
 import { ClientOnly } from "~/components/ClientOnly";
 import { ShareButton } from "~/components/ShareButton";
-import { ProfileTabs } from "~/components/ProfileTabs";
+import { SignedIn, SignedOut, useUser } from "@clerk/react-router";
+import { Button } from "~/components/ui/button";
+import { Settings, BarChart3 } from "lucide-react";
+// import { ProfileTabs } from "~/components/ProfileTabs";
 import { StripeTestButton, StripeConnectionTest } from "~/components/StripeTestButton";
+import { GiftModal } from "~/components/GiftModal";
 
 const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
 
 interface CreatorData {
+  _id?: string;
   handle: string;
   name: string;
   tagline: string;
   avatar: string;
   banner: string;
-  sponsors: Array<{
-    id: string;
-    name: string;
-    logo: string;
-    url: string;
-  }>;
+  // sponsors: Array<{
+  //   id: string;
+  //   name: string;
+  //   logo: string;
+  //   url: string;
+  // }>;
   socialLinks: Array<{
     platform: string;
     url: string;
   }>;
-  posts: Array<{
-    id: string;
-    platform: string;
-    thumbnail: string;
-    timestamp: string;
-    url: string;
-  }>;
+  // posts: Array<{
+  //   id: string;
+  //   platform: string;
+  //   thumbnail: string;
+  //   timestamp: string;
+  //   url: string;
+  // }>;
   gifts: Array<{
     id: string;
     title: string;
@@ -48,52 +55,53 @@ interface CreatorData {
     perks: string[];
     highlighted?: boolean;
   }>;
-  callouts: Array<{
-    id: string;
-    type: string;
-    price: number;
-    duration: string;
-    description: string;
-    currency: string;
-    featured?: boolean;
-  }>;
-  spoilItems: Array<{
-    id: string;
-    title: string;
-    description: string;
-    targetAmount: number;
-    currentAmount: number;
-    currency: string;
-    image: string;
-    shareAmount: number;
-  }>;
-  leaderboards: {
-    week: Array<{
-      rank: number;
-      name: string;
-      handle: string;
-      amount: number;
-    }>;
-    month: Array<{
-      rank: number;
-      name: string;
-      
-      handle: string;
-      amount: number;
-    }>;
-    allTime: Array<{
-      rank: number;
-      name: string;
-      handle: string;
-      amount: number;
-    }>;
-  };
+  // callouts: Array<{
+  //   id: string;
+  //   type: string;
+  //   price: number;
+  //   duration: string;
+  //   description: string;
+  //   currency: string;
+  //   featured?: boolean;
+  // }>;
+  // spoilItems: Array<{
+  //   id: string;
+  //   title: string;
+  //   description: string;
+  //   targetAmount: number;
+  //   currentAmount: number;
+  //   currency: string;
+  //   image: string;
+  //   shareAmount: number;
+  // }>;
+  // leaderboards: {
+  //   week: Array<{
+  //     rank: number;
+  //     name: string;
+  //     handle: string;
+  //     amount: number;
+  //   }>;
+  //   month: Array<{
+  //     rank: number;
+  //     name: string;
+  //     
+  //     handle: string;
+  //     amount: number;
+  //   }>;
+  //   allTime: Array<{
+  //     rank: number;
+  //     name: string;
+  //     handle: string;
+  //     amount: number;
+  //   }>;
+  // };
   recentPurchases: Array<{
     id: string;
     buyer: string;
     item: string;
     amount: number;
   }>;
+  isOwner?: boolean;
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -110,57 +118,58 @@ export async function loader({ params }: Route.LoaderArgs) {
       throw new Response("Creator not found", { status: 404 });
     }
 
-    const [weekLeaderboard, monthLeaderboard, allTimeLeaderboard] = await Promise.all([
-      convex.query(api.creators.getLeaderboard, { 
-        creatorId: profile.creator._id, 
-        timeframe: "week" 
-      }),
-      convex.query(api.creators.getLeaderboard, { 
-        creatorId: profile.creator._id, 
-        timeframe: "month" 
-      }),
-      convex.query(api.creators.getLeaderboard, { 
-        creatorId: profile.creator._id, 
-        timeframe: "allTime" 
-      }),
-    ]);
+    // const [weekLeaderboard, monthLeaderboard, allTimeLeaderboard] = await Promise.all([
+    //   convex.query(api.creators.getLeaderboard, { 
+    //     creatorId: profile.creator._id, 
+    //     timeframe: "week" 
+    //   }),
+    //   convex.query(api.creators.getLeaderboard, { 
+    //     creatorId: profile.creator._id, 
+    //     timeframe: "month" 
+    //   }),
+    //   convex.query(api.creators.getLeaderboard, { 
+    //     creatorId: profile.creator._id, 
+    //     timeframe: "allTime" 
+    //   }),
+    // ]);
 
-    const getRelativeTime = (timestamp: number) => {
-      const now = Date.now();
-      const diff = now - timestamp;
-      const minutes = Math.floor(diff / 60000);
-      const hours = Math.floor(diff / 3600000);
-      const days = Math.floor(diff / 86400000);
-      
-      if (minutes < 60) return `${minutes} minutes ago`;
-      if (hours < 24) return `${hours} hours ago`;
-      return `${days} days ago`;
-    };
+    // const getRelativeTime = (timestamp: number) => {
+    //   const now = Date.now();
+    //   const diff = now - timestamp;
+    //   const minutes = Math.floor(diff / 60000);
+    //   const hours = Math.floor(diff / 3600000);
+    //   const days = Math.floor(diff / 86400000);
+    //   
+    //   if (minutes < 60) return `${minutes} minutes ago`;
+    //   if (hours < 24) return `${hours} hours ago`;
+    //   return `${days} days ago`;
+    // };
 
     const creatorData: CreatorData = {
+      _id: profile.creator._id,
       handle: profile.creator.handle,
       name: profile.creator.name,
       tagline: profile.creator.tagline || "",
       avatar: profile.creator.avatar || "/kaizen.png",
       banner: profile.creator.banner || "/kaizen.png",
-      sponsors: profile.sponsors.map((s) => ({
-        id: s._id,
-        name: s.name,
-        logo: s.logo,
-        url: s.url,
-      })),
-      socialLinks: profile.socialLinks.map((sl) => ({
+      // sponsors: profile.sponsors.map((s) => ({
+      //   id: s._id,
+      //   name: s.name,
+      //   logo: s.logo,
+      //   url: s.url,
+      // })),
+      socialLinks: profile.socialLinks.map((sl: any) => ({
         platform: sl.platform,
         url: sl.url,
       })),
-      posts: profile.posts.map((p) => ({
-        id: p._id,
-        platform: p.platform,
-        thumbnail: p.thumbnail,
-        timestamp: getRelativeTime(p.publishedAt),
-        url: p.url,
-      })),
-      gifts: profile.gifts.map((g) => ({
+      // posts: profile.posts.map((p) => ({
+      //   id: p._id,
+      //   platform: p.platform,
+      //   thumbnail: p.thumbnail,
+      //   timestamp: getRelativeTime(p.publishedAt),
+      //   url: p.url,
+      // })),
+      gifts: profile.gifts.map((g: any) => ({
         id: g._id,
         title: g.title,
         price: g.price / 100,
@@ -169,7 +178,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         currency: g.currency,
         type: g.type,
       })),
-      tiers: profile.tiers.map((t) => ({
+      tiers: profile.tiers.map((t: any) => ({
         id: t._id,
         name: t.name,
         price: t.price / 100,
@@ -177,51 +186,52 @@ export async function loader({ params }: Route.LoaderArgs) {
         perks: t.perks,
         highlighted: t.highlighted,
       })),
-      callouts: profile.callouts.map((c) => ({
-        id: c._id,
-        type: c.type,
-        price: c.price / 100,
-        duration: c.duration,
-        description: c.description,
-        currency: c.currency,
-        featured: c.featured,
-      })),
-      spoilItems: profile.spoilItems.map((si) => ({
-        id: si._id,
-        title: si.title,
-        description: si.description,
-        targetAmount: si.targetAmount / 100,
-        currentAmount: si.currentAmount / 100,
-        currency: si.currency,
-        image: si.image,
-        shareAmount: si.shareAmount / 100,
-      })),
-      leaderboards: {
-        week: weekLeaderboard.map((entry) => ({
-          rank: entry.rank,
-          name: entry.fanName,
-          handle: entry.fanName,
-          amount: entry.totalAmount / 100,
-        })),
-        month: monthLeaderboard.map((entry) => ({
-          rank: entry.rank,
-          name: entry.fanName,
-          handle: entry.fanName,
-          amount: entry.totalAmount / 100,
-        })),
-        allTime: allTimeLeaderboard.map((entry) => ({
-          rank: entry.rank,
-          name: entry.fanName,
-          handle: entry.fanName,
-          amount: entry.totalAmount / 100,
-        })),
-      },
-      recentPurchases: profile.recentPurchases.map((p) => ({
+      // callouts: profile.callouts.map((c) => ({
+      //   id: c._id,
+      //   type: c.type,
+      //   price: c.price / 100,
+      //   duration: c.duration,
+      //   description: c.description,
+      //   currency: c.currency,
+      //   featured: c.featured,
+      // })),
+      // spoilItems: profile.spoilItems.map((si) => ({
+      //   id: si._id,
+      //   title: si.title,
+      //   description: si.description,
+      //   targetAmount: si.targetAmount / 100,
+      //   currentAmount: si.currentAmount / 100,
+      //   currency: si.currency,
+      //   image: si.image,
+      //   shareAmount: si.shareAmount / 100,
+      // })),
+      // leaderboards: {
+      //   week: weekLeaderboard.map((entry) => ({
+      //     rank: entry.rank,
+      //     name: entry.fanName,
+      //     handle: entry.fanName,
+      //     amount: entry.totalAmount / 100,
+      //   })),
+      //   month: monthLeaderboard.map((entry) => ({
+      //     rank: entry.rank,
+      //     name: entry.fanName,
+      //     handle: entry.fanName,
+      //     amount: entry.totalAmount / 100,
+      //   })),
+      //   allTime: allTimeLeaderboard.map((entry) => ({
+      //     rank: entry.rank,
+      //     name: entry.fanName,
+      //     handle: entry.fanName,
+      //     amount: entry.totalAmount / 100,
+      //   })),
+      // },
+      recentPurchases: profile.recentPurchases.map((p: any) => ({
         id: p._id,
         buyer: p.fanName || "Anonymous",
         item: "Gift",
         amount: p.totalAmount / 100,
       })),
+      isOwner: false, // Will be updated client-side
     };
 
     return creatorData;
@@ -233,6 +243,75 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
   const creator = loaderData;
+  const [selectedGift, setSelectedGift] = useState<any>(null);
+  const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [hasProcessedCheckout, setHasProcessedCheckout] = useState(false);
+  
+  const { user } = useUser();
+
+  // Check if current user is the creator
+  const ownerCheck = useQuery(api.creators.isCreatorOwner, 
+    creator._id ? { creatorId: creator._id as any } : "skip"
+  );
+  const isOwner = ownerCheck?.isOwner || false;
+
+  const handleGiftClick = (gift: any) => {
+    setSelectedGift(gift);
+    setIsGiftModalOpen(true);
+  };
+
+  const closeGiftModal = () => {
+    setIsGiftModalOpen(false);
+    setSelectedGift(null);
+  };
+
+  const handleGiftPurchase = async (data: {
+    giftId: string;
+    quantity: number;
+    fanName: string;
+    message: string;
+  }) => {
+    try {
+      // Create checkout session
+      const result = await convex.action(api.payments.createCheckoutSession, {
+        giftId: data.giftId as any,
+        creatorId: creator._id as any,
+        quantity: data.quantity,
+        fanName: data.fanName,
+        message: data.message,
+      });
+
+      // Redirect to Stripe checkout
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+      // Handle error (show toast, etc.)
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("success");
+    const sessionId = params.get("session_id");
+
+    if (success === "true" && sessionId && !hasProcessedCheckout) {
+      setHasProcessedCheckout(true);
+      let reloadAfterConfirm = false;
+
+      // Simple success handling for MVP
+      alert("Thanks! Your gift went through.");
+      
+      const url = new URL(window.location.href);
+      url.searchParams.delete("success");
+      url.searchParams.delete("session_id");
+      window.history.replaceState({}, "", url.toString());
+      window.location.reload();
+    }
+  }, [hasProcessedCheckout]);
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
@@ -267,20 +346,37 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
                 <p className="text-lg md:text-xl text-slate-200 mb-4">
                   {creator.tagline}
                 </p>
-                <ClientOnly fallback={
-                  <div className="border border-[#2a2a2a] text-slate-200 px-4 py-2 rounded text-sm bg-[#252525] animate-pulse">
-                    Loading...
-                  </div>
-                }>
-                  <ShareButton />
-                </ClientOnly>
+                <div className="flex flex-wrap gap-3">
+                  <ClientOnly fallback={
+                    <div className="border border-[#2a2a2a] text-slate-200 px-4 py-2 rounded text-sm bg-[#252525] animate-pulse">
+                      Loading...
+                    </div>
+                  }>
+                    <ShareButton />
+                  </ClientOnly>
+                  
+                  {/* Dashboard Access Button for Creator */}
+                  <SignedIn>
+                    {isOwner && (
+                      <Button
+                        asChild
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        <a href="/creatordashboard">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </a>
+                      </Button>
+                    )}
+                  </SignedIn>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sponsors Section */}
+      {/* Sponsors Section - NOT IN PRD
       {creator.sponsors.length > 0 && (
         <div className="py-8 border-b border-[#2a2a2a]">
           <div className="max-w-6xl mx-auto px-4 md:px-8">
@@ -306,6 +402,7 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       )}
+      */}
 
       {/* Social Links Section */}
       {creator.socialLinks.length > 0 && (
@@ -392,7 +489,7 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
         </div>
       )}
 
-      {/* Stripe Test Zone */}
+      {/* Stripe Test Zone - NOT IN PRD
       <div className="py-8 border-b border-[#2a2a2a]">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <ClientOnly fallback={<div className="animate-pulse bg-[#232323] h-32 rounded-lg"></div>}>
@@ -404,8 +501,9 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           </ClientOnly>
         </div>
       </div>
+      */}
 
-      {/* Latest Posts */}
+      {/* Latest Posts - NOT IN PRD
       {creator.posts.length > 0 && (
         <div className="py-12 border-b border-[#2a2a2a]">
           <div className="max-w-6xl mx-auto px-4 md:px-8">
@@ -435,8 +533,9 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       )}
+      */}
 
-      {/* Interactive Tabs Section */}
+      {/* Interactive Tabs Section - REPLACED WITH SIMPLE SECTIONS
       <ClientOnly fallback={
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
           <div className="bg-[#232323] border border-[#2a2a2a] rounded-lg p-6 animate-pulse">
@@ -451,10 +550,10 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
       }>
         <ProfileTabs creator={creator} />
       </ClientOnly>
+      */}
 
-      {/* Stats Section */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
-        <div className="bg-[#232323] border border-[#2a2a2a] rounded-lg p-6">
+      {/* Stats Section - NOT IN PRD
+      <div className="bg-[#232323] border border-[#2a2a2a] rounded-lg p-6 mb-6">
           <h3 className="text-white font-semibold mb-4">Profile Stats</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
@@ -475,6 +574,9 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </div>
+      */}
+
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
 
         {/* Recent Activity */}
         <div className="mt-6 bg-[#232323] border border-[#2a2a2a] rounded-lg p-6">
@@ -506,7 +608,11 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           <h3 className="text-white font-semibold mb-4">Available Gifts</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {creator.gifts.map((gift) => (
-              <div key={gift.id} className="bg-[#232323] border border-[#2a2a2a] rounded-lg hover:border-[#333333] transition-colors cursor-pointer">
+              <div 
+                key={gift.id} 
+                className="bg-[#232323] border border-[#2a2a2a] rounded-lg hover:border-[#333333] transition-colors cursor-pointer"
+                onClick={() => handleGiftClick(gift)}
+              >
                 <div className="p-4">
                   <img
                     src={gift.media}
@@ -558,6 +664,17 @@ export default function CreatorProfile({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       </div>
+
+      {/* Gift Modal */}
+      {selectedGift && (
+        <GiftModal
+          gift={selectedGift}
+          creator={{ name: creator.name, handle: creator.handle }}
+          isOpen={isGiftModalOpen}
+          onClose={closeGiftModal}
+          onPurchase={handleGiftPurchase}
+        />
+      )}
     </div>
   );
 }

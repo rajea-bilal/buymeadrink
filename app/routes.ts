@@ -30,6 +30,12 @@ const routes: RouteConfig = [
     route("dashboard/settings", "routes/dashboard/settings.tsx"),
     route("dashboard/chat", "routes/dashboard/chat.tsx"),
   ]),
+  
+  // Creator dashboard (standalone route)
+  route("creatordashboard", "routes/creatordashboard.tsx"),
+  
+  // Creator onboarding flow
+  route("onboard", "routes/onboard.tsx"),
 ];
 
 export default routes satisfies RouteConfig;

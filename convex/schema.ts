@@ -74,18 +74,30 @@ export default defineSchema({
   })
     .index("by_creator_and_active", ["creatorId", "active"]),
   
-  // BuyMeADrink: Monthly membership tiers
+  // BuyMeADrink: Monthly membership tiers (also aliased as supportTiers)
   tiers: defineTable({
     creatorId: v.id("creators"),
     name: v.string(), // "Bronze", "Silver", "Gold", "Platinum"
     price: v.number(), // In cents
     currency: v.string(),
     perks: v.array(v.string()), // List of benefits
+    description: v.optional(v.string()), // Additional description field for Task 1 compatibility
     stripePriceId: v.optional(v.string()),
     highlighted: v.optional(v.boolean()),
     active: v.boolean(),
   })
     .index("by_creator_and_active", ["creatorId", "active"]),
+  
+  // Alias for Task 1 compatibility - same as tiers table
+  supportTiers: defineTable({
+    creatorId: v.id("creators"),
+    name: v.string(),
+    price: v.number(), // In cents
+    description: v.string(),
+    perks: v.array(v.string()),
+    active: v.optional(v.boolean()),
+  })
+    .index("by_creator", ["creatorId"]),
   
   // BuyMeADrink: Callout/shout-out options
   callouts: defineTable({
@@ -117,7 +129,7 @@ export default defineSchema({
   })
     .index("by_creator_and_active", ["creatorId", "active"]),
   
-  // BuyMeADrink: One-time gift purchases
+  // BuyMeADrink: One-time gift purchases (also aliased as giftPurchases)
   orders: defineTable({
     creatorId: v.id("creators"),
     fanId: v.optional(v.string()), // Can be guest or logged-in user
@@ -126,11 +138,12 @@ export default defineSchema({
     quantity: v.number(),
     unitPrice: v.number(), // In cents
     totalAmount: v.number(), // In cents
+    amount: v.optional(v.number()), // Alias for totalAmount for Task 1 compatibility
     currency: v.string(),
     message: v.optional(v.string()),
     videoUrl: v.optional(v.string()), // Fan-uploaded video message
     stripePaymentIntentId: v.optional(v.string()),
-    stripeCheckoutSessionId: v.optional(v.string()),
+    stripeCheckoutSessionId: v.optional(v.string()), // Alias: stripeSessionId
     status: v.string(), // "pending", "completed", "refunded"
     moderationStatus: v.optional(v.string()), // "pending", "approved", "rejected"
     isRecurring: v.optional(v.boolean()), // Monthly gift
@@ -138,11 +151,26 @@ export default defineSchema({
     .index("by_creator_and_status", ["creatorId", "status"])
     .index("by_fan", ["fanId"]),
   
-  // BuyMeADrink: Tier subscriptions (extends existing subscriptions table)
+  // Alias for Task 1 compatibility - same as orders table
+  giftPurchases: defineTable({
+    giftId: v.id("gifts"),
+    creatorId: v.id("creators"), 
+    fanName: v.optional(v.string()),
+    message: v.optional(v.string()),
+    quantity: v.number(),
+    amount: v.number(), // In cents
+    stripeSessionId: v.optional(v.string()),
+    status: v.optional(v.string()),
+  })
+    .index("by_creator", ["creatorId"])
+    .index("by_gift", ["giftId"]),
+  
+  // BuyMeADrink: Tier subscriptions (also aliased as subscriptions for Task 1)
   tierSubscriptions: defineTable({
     creatorId: v.id("creators"),
     fanId: v.optional(v.string()),
     fanName: v.optional(v.string()),
+    fanEmail: v.optional(v.string()), // Added for Task 1 compatibility
     tierId: v.id("tiers"),
     stripeSubscriptionId: v.string(),
     stripePriceId: v.string(),
@@ -231,4 +259,24 @@ export default defineSchema({
     .index("type", ["type"])
     .index("polarEventId", ["polarEventId"])
     .index("by_webhook_id", ["webhookId"]),
+
+  // BuyMeADrink: Manual payout tracking for MVP
+  payouts: defineTable({
+    creatorId: v.id("creators"),
+    amount: v.number(), // Amount in cents
+    currency: v.string(),
+    status: v.string(), // "pending", "processing", "sent", "failed"
+    method: v.string(), // "paypal", "venmo", "bank_transfer", "stripe_connect"
+    recipientEmail: v.optional(v.string()),
+    recipientDetails: v.optional(v.string()), // PayPal email, Venmo handle, etc.
+    transactionId: v.optional(v.string()), // External payment ID
+    notes: v.optional(v.string()),
+    requestedAt: v.number(),
+    processedAt: v.optional(v.number()),
+    sentAt: v.optional(v.number()),
+    failedReason: v.optional(v.string()),
+    adminNotes: v.optional(v.string()),
+  })
+    .index("by_creator_and_status", ["creatorId", "status"])
+    .index("by_status", ["status"]),
 });

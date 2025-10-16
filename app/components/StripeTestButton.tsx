@@ -1,9 +1,6 @@
 import { useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { useMutation } from "convex/react";
+import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 interface StripeTestButtonProps {
   creatorHandle: string;
@@ -11,7 +8,7 @@ interface StripeTestButtonProps {
 
 export function StripeTestButton({ creatorHandle }: StripeTestButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const createTestCheckoutSession = useMutation(api.payments.createTestCheckoutSession);
+  const createTestCheckoutSession = useAction(api.payments.createTestCheckoutSession);
 
   const handleClick = async () => {
     try {
@@ -25,16 +22,10 @@ export function StripeTestButton({ creatorHandle }: StripeTestButtonProps) {
       });
 
       // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      if (stripe && session.sessionId) {
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: session.sessionId,
-        });
-        
-        if (error) {
-          console.error("Stripe redirect error:", error);
-          alert("Payment failed. Please try again.");
-        }
+      if (session.url) {
+        window.location.href = session.url;
+      } else {
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
       console.error("Payment error:", error);
@@ -70,7 +61,7 @@ export function StripeTestButton({ creatorHandle }: StripeTestButtonProps) {
 export function StripeConnectionTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string>("");
-  const testConnection = useMutation(api.payments.testStripeConnection);
+  const testConnection = useAction(api.payments.testStripeConnection);
 
   const handleTest = async () => {
     try {

@@ -70,16 +70,41 @@ export async function loader(args: Route.LoaderArgs) {
     ({ userId } = await getAuth(args));
   }
 
-  // 2. Fetch subscription status & plans only if Convex enabled
+  // 2. Check if authenticated user has a creator profile
+  let hasCreatorProfile = false;
+  if (convexEnabled && userId) {
+    const { ConvexHttpClient } = await import("convex/browser");
+    const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL!);
+    
+    try {
+      const creator = await convex.query(api.creators.getCreatorByUserId, { userId });
+      hasCreatorProfile = !!creator;
+      
+      // If authenticated but no creator profile, show onboarding button instead of redirecting
+      if (!creator) {
+        const { redirect } = await import("react-router");
+        // Don't redirect - let the UI show a button
+      }
+    } catch (error) {
+      // If error is a redirect, re-throw it
+      if (error && typeof error === 'object' && 'status' in error) {
+        throw error;
+      }
+      console.error("Failed to check creator profile:", error);
+    }
+  }
+
+  // 3. Fetch subscription status & plans only if Convex enabled
   let subscriptionData: { hasActiveSubscription: boolean } | null = null;
   let plans: any = null;
 
   if (convexEnabled) {
-    const { fetchQuery, fetchAction } = await import("convex/nextjs");
+    const { ConvexHttpClient } = await import("convex/browser");
+    const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL!);
 
     const promises: Promise<any>[] = [
       userId
-        ? fetchQuery(api.subscriptions.checkUserSubscriptionStatus, {
+        ? convex.query(api.subscriptions.checkUserSubscriptionStatus, {
             userId,
           }).catch((error: unknown) => {
             console.error("Failed to fetch subscription data:", error);
@@ -90,7 +115,7 @@ export async function loader(args: Route.LoaderArgs) {
 
     // Only fetch plans if payments are enabled
     if (paymentsEnabled) {
-      promises.push(fetchAction(api.subscriptions.getAvailablePlans));
+      promises.push(convex.action(api.subscriptions.getAvailablePlans, {}));
     } else {
       promises.push(Promise.resolve(null));
     }
@@ -101,6 +126,7 @@ export async function loader(args: Route.LoaderArgs) {
   return {
     isSignedIn: !!userId,
     hasActiveSubscription: subscriptionData?.hasActiveSubscription || false,
+    hasCreatorProfile,
     plans,
   };
 }
@@ -110,6 +136,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     <>
       <Integrations loaderData={loaderData} />
       
+      {/* Onboarding Button for users without creator profile */}
+      {!loaderData.hasCreatorProfile && loaderData.isSignedIn && (
+        <section className="py-10 bg-emerald-950">
+          <div className="container mx-auto px-4 text-center">
+            <h3 className="text-2xl font-bold mb-4 text-white">
+              Ready to Start Your Creator Journey?
+            </h3>
+            <p className="text-lg text-emerald-200 mb-6">
+              Set up your creator profile and start receiving gifts from fans.
+            </p>
+            <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+              <Link to="/onboard">
+                Create Creator Profile
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}      
       {/* BuyMeADrink Demo Section */}
       <section className="py-20 bg-gradient-to-b from-slate-950 to-slate-900">
         <div className="container mx-auto px-4 text-center">

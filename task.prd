@@ -1,154 +1,162 @@
-# UFC Fighter Real Data Integration PRD
+# BuyMeADrink MVP Implementation Tasks
 
-## Overview
-Replace seeded UFC fighter data with real-time data from external APIs to populate profile.$handle.tsx pages with accurate fighter information including stats, social media, and performance metrics.
+## ✅ TASK 1: Database Schema Setup
+Set up Convex database tables for creators, gifts, and transactions.
 
-## Current State
-- Profile pages use seeded data from Convex database
-- Static fighter information with no real-time updates
-- Manual data entry required for new fighters
+### Subtasks:
+- [x] Create `creators` table with fields: id, handle, name, bio, profileImage, bannerImage, socialLinks
+- [x] Create `gifts` table with fields: id, creatorId, title, description, price, currency, media
+- [x] Create `supportTiers` table with fields: id, creatorId, name, price, description, perks
+- [x] Create `giftPurchases` table with fields: id, giftId, creatorId, fanName, message, quantity, amount, stripeSessionId
+- [x] Create `subscriptions` table with fields: id, tierId, creatorId, fanEmail, stripeSubscriptionId, status
+- [x] Add proper indexes for fast lookups by creatorId and handle
+- [x] Test database queries work correctly
 
-## Target State
-- Real-time UFC fighter data integration
-- Automatic profile population from external APIs
-- Live stats, social media, and performance updates
+## ✅ TASK 2: Creator Profile Page (`/profile/:handle`)
+Build the public-facing page where fans can support creators.
 
-## API Research Results
+### Subtasks:
+- [x] Create profile page route in `app/routes/profile.$handle.tsx`
+- [x] Add creator info section (name, bio, profile image, banner)
+- [x] Add social media links section
+- [x] Build gifts grid layout (4 per row, responsive)
+- [x] Add gift selection modal with quantity picker
+- [x] Add fan name and message input fields
+- [x] Connect Stripe checkout for gift purchases
+- [x] Show last 3 gift messages on profile (recent activity section)
+- [x] Add monthly support tiers section
+- [x] Make page mobile responsive
+- [x] Test with real creator data
 
-### Recommended Primary API: API-Sports MMA
-- **Cost**: $10/month (100 free requests/day for testing)
-- **Coverage**: All UFC events, fighters, live results
-- **Data**: Fighter stats, records, upcoming bouts, historical data
-- **Reliability**: Daily updates, 72-hour event addition guarantee
+## ✅ TASK 3: Stripe Payment Integration
+Set up Stripe for one-time gifts and monthly subscriptions.
 
-### Backup API: SportsDataIO MMA
-- **Cost**: Contact for pricing (free trial available)
-- **Coverage**: Real-time MMA coverage
-- **Data**: Comprehensive fight data, unlimited API calls
-- **Reliability**: Enterprise-grade, real-time updates
+### Subtasks:
+- [x] Create Stripe checkout session for gifts in Convex action
+- [x] Handle Stripe webhook for successful gift payments
+- [x] Store payment records in database
+- [x] Add error handling for failed payments
+- [x] Test with Stripe test cards
+- [x] Verify webhooks work correctly
+- [x] **MVP: Manual payout tracking system** (instead of Stripe Connect)
+- [x] Platform fee calculation (5% fee)
+- [x] Creator earnings dashboard
+- [x] Payout request system
+- [ ] ~~Set up Stripe Connect Express for creator payouts~~ (Post-MVP)
+- [ ] ~~Create Stripe subscription for monthly tiers~~ (Post-MVP)
+- [ ] ~~Handle Stripe webhook for subscription events~~ (Post-MVP)
 
-## Implementation Plan
+## ✅ TASK 4: Creator Dashboard (`/dashboard`)
+Build basic dashboard for creators to manage their profile and view earnings.
 
-### Phase 1: API Integration Setup
-1. **Create API service layer**
-   - `app/services/ufc-api.ts` - API client for fighter data
-   - `convex/lib/ufc-sync.ts` - Convex functions for data sync
-   - Environment variables: `UFC_API_KEY`, `UFC_API_BASE_URL`
+### Subtasks:
+- [x] Create dashboard route in `app/routes/dashboard.tsx`
+- [x] Add tab navigation (Profile, Gifts & Tiers, Revenue)
+- [x] Build Profile Setup tab with form fields
+- [x] Add image upload for profile and banner
+- [x] Build Gifts & Tiers management tab
+- [x] Add gift creation form (title, description, price, image)
+- [x] Add support tier creation form (name, price, perks)
+- [x] Build Revenue Overview tab
+- [x] Show total earnings, latest supporters, subscriber count
+- [x] Add basic analytics (gift purchases, page views)
+- [x] Test all dashboard functions work
 
-2. **Database schema updates**
-   - Add `externalFighterId` field to users table
-   - Create `fighterStats` table for cached API data
-   - Add `lastSyncAt` timestamp for data freshness
+## TASK 5: Email Notifications
+Set up Resend email integration for receipts and confirmations.
 
-### Phase 2: Data Fetching & Caching
-1. **Fighter lookup system**
-   - Map profile handles to UFC fighter IDs
-   - Fallback to name-based search if no direct mapping
-   - Store mapping in `fighterMappings` table
+### Subtasks:
+- [x] Finish the Resend helper so it uses BuyMeADrink naming, sender settings, and feature flags
+- [x] Write HTML email templates for gift receipt, creator gift alert, tier signup, and payout digest
+- [x] Hook the Stripe gift success flow to log the order and fire the fan + creator emails
+- [x] Add a subscription email hook ready to call once memberships go live
+- [x] Plan a monthly payout summary job that sends the digest through Resend (simplified to dashboard display)
 
-2. **Caching strategy**
-   - Cache fighter data for 24 hours
-   - Background sync job every 6 hours
-   - Immediate refresh for active fight weeks
+## TASK 6: UI Components & Styling
+Build reusable components and apply consistent styling.
 
-### Phase 3: Profile Page Integration
-1. **Update profile.$handle.tsx loader**
-   - Fetch real fighter data from cache
-   - Fallback to seeded data if API unavailable
-   - Merge API data with user-generated content
+### Subtasks:
+- [ ] Create GiftCard component for gift display
+- [ ] Create TierCard component for subscription tiers
+- [ ] Create GiftModal component for purchase flow
+- [ ] Create CreatorHeader component for profile page
+- [ ] Create DashboardStats component for revenue display
+- [ ] Apply TailwindCSS styling throughout
+- [ ] Make all components mobile responsive
+- [ ] Add loading states for payments
+- [ ] Add success/error states for forms
+- [ ] Test components render correctly
 
-2. **Real-time updates**
-   - WebSocket updates during live events
-   - Auto-refresh fighter stats post-fight
-   - Social media follower count updates
+## TASK 7: Creator Onboarding Flow
+Build the flow for new creators to set up their profile.
 
-### Phase 4: Social Media Integration
-1. **Fighter social handles**
-   - Extract from API where available
-   - Manual override system for custom handles
-   - Social media metrics tracking
+### Subtasks:
+- [ ] Create creator signup route
+- [ ] Add handle availability check
+- [ ] Build profile setup wizard
+- [ ] Add Stripe Connect onboarding
+- [ ] Verify Stripe account setup completed
+- [ ] Create default gifts for new creators
+- [ ] Add welcome email for new creators
+- [ ] Test complete onboarding flow
+- [ ] Add validation for required fields
+- [ ] Handle onboarding errors gracefully
 
-2. **Content aggregation**
-   - Latest posts from verified accounts
-   - Fight announcements and updates
-   - Training content and behind-scenes
+## TASK 8: Data Fetching & State Management
+Set up proper data fetching with Convex queries and mutations.
 
-## Technical Requirements
+### Subtasks:
+- [ ] Create Convex queries for creator profile data
+- [ ] Create Convex mutations for gift purchases
+- [ ] Create Convex queries for dashboard data
+- [ ] Add real-time updates for new gifts
+- [ ] Add optimistic updates for better UX
+- [ ] Handle loading states properly
+- [ ] Add error handling for failed requests
+- [ ] Test data consistency across pages
+- [ ] Add pagination for large gift lists
+- [ ] Optimize query performance
 
-### API Integration
-```typescript
-// app/services/ufc-api.ts
-interface UFCFighter {
-  id: string;
-  name: string;
-  record: { wins: number; losses: number; draws: number };
-  stats: FighterStats;
-  socialMedia: SocialHandles;
-  nextFight?: UpcomingFight;
-}
+## TASK 9: Authentication & Security
+Add basic authentication for creator dashboard access.
 
-// Convex schema addition
-fighterStats: defineTable({
-  fighterId: v.string(),
-  data: v.object({...}),
-  lastSyncAt: v.number(),
-  source: v.string(), // "api-sports" | "sportsdata"
-})
-```
+### Subtasks:
+- [ ] Set up Clerk authentication
+- [ ] Protect dashboard routes with auth
+- [ ] Link user accounts to creator profiles
+- [ ] Add logout functionality
+- [ ] Validate user permissions for creator actions
+- [ ] Secure API endpoints in Convex
+- [ ] Add CSRF protection for forms
+- [ ] Sanitize user input for XSS prevention
+- [ ] Test authentication flow works
+- [ ] Handle auth errors gracefully
 
-### Environment Variables
-```
-UFC_API_KEY=your_api_key
-UFC_API_BASE_URL=https://api-sports.io/v1/mma
-UFC_SYNC_INTERVAL_HOURS=6
-```
+## TASK 10: Testing & Polish
+Final testing and UI polish before launch.
 
-### Convex Functions
-- `getFighterData(handle: string)` - Get cached fighter data
-- `syncFighterData(fighterId: string)` - Sync from API
-- `searchFighterByName(name: string)` - Name-based lookup
+### Subtasks:
+- [ ] Test complete gift purchase flow end-to-end
+- [ ] Test complete subscription flow end-to-end
+- [ ] Test creator dashboard functionality
+- [ ] Test mobile responsiveness on real devices
+- [ ] Add proper error messages for user errors
+- [ ] Add success messages for completed actions
+- [ ] Optimize page load speeds
+- [ ] Test with different creator profiles
+- [ ] Fix any UI bugs or inconsistencies
+- [ ] Verify all links and buttons work correctly
 
-## Data Flow
-1. User visits `/profile/conor-mcgregor`
-2. Loader checks `fighterMappings` for UFC fighter ID
-3. Fetch cached data from `fighterStats` table
-4. If stale (>24h) or missing, trigger background sync
-5. Return combined data (API + user content)
-6. Display real-time fighter information
+---
 
-## Error Handling
-- API rate limit protection with exponential backoff
-- Graceful fallback to cached/seeded data
-- Error logging for failed API calls
-- Manual data override for critical fighters
+## Implementation Notes for Claude Code:
 
-## Success Metrics
-- 95% uptime for fighter data availability
-- <500ms profile page load time
-- 24-hour maximum data staleness
-- Zero manual data entry for top 100 fighters
-
-## Implementation Tasks
-1. Set up API-Sports account and test endpoints
-2. Create UFC API service layer
-3. Update Convex schema and functions
-4. Implement caching and sync logic
-5. Update profile page loader
-6. Add background sync job
-7. Test with real fighter data
-8. Deploy and monitor
-
-## Timeline
-- Phase 1: 2 days (API setup)
-- Phase 2: 3 days (caching system)
-- Phase 3: 2 days (profile integration)
-- Phase 4: 2 days (social media)
-- Testing & deployment: 1 day
-
-**Total: 10 days**
-
-## Risks & Mitigation
-- **API rate limits**: Implement caching and batch requests
-- **API costs**: Monitor usage, implement request optimization
-- **Data accuracy**: Cross-reference multiple sources for critical data
-- **Fighter name matching**: Manual mapping table for edge cases
+- Use existing codebase patterns from the current project
+- Follow React Router v7 conventions with loaders and actions
+- Use Convex for all backend operations (queries, mutations, actions)
+- Style with TailwindCSS using existing design system
+- Handle payments through Stripe only (no other payment processors)
+- Keep code simple and maintainable
+- Add proper TypeScript types for all data structures
+- Use error boundaries for graceful error handling
+- Test each feature thoroughly before moving to next task
