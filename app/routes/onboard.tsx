@@ -588,26 +588,26 @@ function OnboardingContent({ loaderData }: { loaderData: OnboardingLoaderData })
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="text-center py-8">
-      <Star className="w-20 h-20 text-emerald-400 mx-auto mb-6" />
-      <h2 className="text-3xl font-bold text-white mb-4">Welcome to BuyMeADrink!</h2>
-      <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+      <Star className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-white mb-2">Welcome to BuyMeADrink!</h2>
+      <p className="text-slate-400 mb-6 max-w-2xl mx-auto">
         You're about to create your creator profile where fans can support you with gifts and subscriptions. 
         This will only take a few minutes!
       </p>
       
-      <div className="bg-[#1f1f1f] rounded-lg p-6 mb-8 text-left max-w-md mx-auto">
-        <h3 className="text-white font-semibold mb-3">What you'll set up:</h3>
-        <ul className="space-y-2 text-slate-300">
+      <div className="bg-[#1f1f1f] rounded-lg p-4 mb-6 text-left max-w-md mx-auto border border-[#2a2a2a]">
+        <h3 className="text-white font-semibold mb-2 text-sm">What you'll set up:</h3>
+        <ul className="space-y-1 text-slate-400 text-sm">
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
             Your profile information
           </li>
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
             Your first gift for fans
           </li>
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
             Optional support tiers
           </li>
         </ul>
@@ -616,10 +616,10 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       <Button
         onClick={onNext}
         size="lg"
-        className="bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-3"
+        className="bg-emerald-600 hover:bg-emerald-700"
       >
         Let's Get Started!
-        <ArrowRight className="w-5 h-5 ml-2" />
+        <ArrowRight className="w-4 h-4 ml-2" />
       </Button>
     </div>
   );
@@ -639,15 +639,15 @@ function ProfileStep({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <User className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-white mb-2">Profile Setup</h2>
-        <p className="text-slate-400">Tell your fans about yourself</p>
+        <User className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+        <h2 className="text-2xl font-bold text-white mb-1">Profile Setup</h2>
+        <p className="text-slate-400 text-sm">Tell your fans about yourself</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Handle */}
         <div className="md:col-span-2">
-          <Label className="text-white font-medium">Creator Handle *</Label>
+          <Label className="text-white font-medium text-sm">Creator Handle *</Label>
           <div className="mt-2 flex gap-2">
             <Input
               value={data.handle}
@@ -656,25 +656,25 @@ function ProfileStep({
                 onCheckHandle(e.target.value);
               }}
               placeholder="your-handle"
-              className="bg-[#2a2a2a] border-[#333] text-white"
+              className="bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
             />
             {handleAvailability === "checking" && (
-              <Badge variant="secondary" className="bg-blue-600/10 text-blue-400">
+              <Badge className="bg-blue-600/20 text-blue-400 border-0 text-xs">
                 Checking...
               </Badge>
             )}
             {handleAvailability === "available" && (
-              <Badge variant="secondary" className="bg-emerald-600/10 text-emerald-400">
+              <Badge className="bg-emerald-600/20 text-emerald-400 border-0 text-xs">
                 Available
               </Badge>
             )}
             {handleAvailability === "taken" && (
-              <Badge variant="secondary" className="bg-red-600/10 text-red-400">
+              <Badge className="bg-red-600/20 text-red-400 border-0 text-xs">
                 Taken
               </Badge>
             )}
             {handleAvailability === "invalid" && (
-              <Badge variant="secondary" className="bg-red-600/10 text-red-400">
+              <Badge className="bg-red-600/20 text-red-400 border-0 text-xs">
                 Invalid
               </Badge>
             )}
@@ -696,110 +696,98 @@ function ProfileStep({
 
         {/* Name */}
         <div>
-          <Label className="text-white font-medium">Display Name *</Label>
+          <Label className="text-white font-medium text-sm">Display Name *</Label>
           <Input
             value={data.name}
             onChange={(e) => setData({ ...data, name: e.target.value })}
             placeholder="Your Name"
-            className="mt-2 bg-[#2a2a2a] border-[#333] text-white"
+            className="mt-2 bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
           />
         </div>
 
         {/* Tagline */}
         <div>
-          <Label className="text-white font-medium">Tagline</Label>
+          <Label className="text-white font-medium text-sm">Tagline</Label>
           <Input
             value={data.tagline}
             onChange={(e) => setData({ ...data, tagline: e.target.value })}
-            placeholder="Short description about you"
-            className="mt-2 bg-[#2a2a2a] border-[#333] text-white"
+            placeholder="Short description"
+            className="mt-2 bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
             maxLength={100}
           />
           <p className="text-xs text-slate-400 mt-1">
-            {data.tagline.length}/100 characters
+            {data.tagline.length}/100
           </p>
         </div>
       </div>
 
       {/* Bio */}
       <div>
-        <Label className="text-white font-medium">Bio</Label>
+        <Label className="text-white font-medium text-sm">Bio</Label>
         <Textarea
           value={data.bio}
           onChange={(e) => setData({ ...data, bio: e.target.value })}
-          placeholder="Tell your fans about yourself, your content, or what you do..."
-          className="mt-2 bg-[#2a2a2a] border-[#333] text-white resize-none"
-          rows={4}
+          placeholder="Tell your fans about yourself..."
+          className="mt-2 bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm resize-none"
+          rows={3}
           maxLength={1000}
         />
         <p className="text-xs text-slate-400 mt-1">
-          {data.bio.length}/1000 characters
+          {data.bio.length}/1000
         </p>
       </div>
 
       {/* Images */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Avatar */}
         <div>
-          <Label className="text-white font-medium">Profile Picture</Label>
-          <div className="mt-2 flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full overflow-hidden">
+          <Label className="text-white font-medium text-sm">Profile Picture</Label>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-600 to-blue-600 rounded-full overflow-hidden flex-shrink-0">
               {data.avatar ? (
                 <img 
                   src={data.avatar} 
-                  alt="Avatar preview"
+                  alt="Avatar"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-white" />
+                  <User className="w-6 h-6 text-white" />
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Input
-                value={data.avatar}
-                onChange={(e) => setData({ ...data, avatar: e.target.value })}
-                placeholder="Image URL"
-                className="bg-[#2a2a2a] border-[#333] text-white"
-              />
-              <Button size="sm" variant="outline" className="border-[#333] text-slate-400 hover:text-white">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload
-              </Button>
-            </div>
+            <Input
+              value={data.avatar}
+              onChange={(e) => setData({ ...data, avatar: e.target.value })}
+              placeholder="Image URL"
+              className="bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
+            />
           </div>
         </div>
 
         {/* Banner */}
         <div>
-          <Label className="text-white font-medium">Banner Image</Label>
-          <div className="mt-2 flex items-center gap-4">
-            <div className="h-16 w-32 bg-gradient-to-r from-purple-900 to-blue-900 rounded-lg overflow-hidden">
+          <Label className="text-white font-medium text-sm">Banner Image</Label>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="w-24 h-14 bg-gradient-to-r from-emerald-700 to-blue-700 rounded overflow-hidden flex-shrink-0">
               {data.banner ? (
                 <img 
                   src={data.banner} 
-                  alt="Banner preview"
-                  className="w-full h-full object-cover opacity-60"
+                  alt="Banner"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-white text-xs text-center">Banner</div>
+                <div className="w-full h-full flex items-center justify-center text-white text-xs">
+                  Banner
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Input
-                value={data.banner}
-                onChange={(e) => setData({ ...data, banner: e.target.value })}
-                placeholder="Banner URL"
-                className="bg-[#2a2a2a] border-[#333] text-white"
-              />
-              <Button size="sm" variant="outline" className="border-[#333] text-slate-400 hover:text-white">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload
-              </Button>
-            </div>
+            <Input
+              value={data.banner}
+              onChange={(e) => setData({ ...data, banner: e.target.value })}
+              placeholder="Banner URL"
+              className="bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
+            />
           </div>
         </div>
       </div>
@@ -817,15 +805,15 @@ function FirstGiftStep({
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <Gift className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-white mb-2">Create Your First Gift</h2>
-        <p className="text-slate-400">Set up a gift that fans can send you</p>
+        <Gift className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+        <h2 className="text-2xl font-bold text-white mb-1">Create Your First Gift</h2>
+        <p className="text-slate-400 text-sm">Set up a gift that fans can send you</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Title */}
         <div>
-          <Label className="text-white font-medium">Gift Title *</Label>
+          <Label className="text-white font-medium text-sm">Gift Title *</Label>
           <Input
             value={data.firstGift.title}
             onChange={(e) => setData({ 
@@ -833,19 +821,19 @@ function FirstGiftStep({
               firstGift: { ...data.firstGift, title: e.target.value }
             })}
             placeholder="e.g., Buy me a coffee"
-            className="mt-2 bg-[#2a2a2a] border-[#333] text-white"
+            className="mt-2 bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
             maxLength={50}
           />
           <p className="text-xs text-slate-400 mt-1">
-            {data.firstGift.title.length}/50 characters
+            {data.firstGift.title.length}/50
           </p>
         </div>
 
         {/* Price */}
         <div>
-          <Label className="text-white font-medium">Price *</Label>
+          <Label className="text-white font-medium text-sm">Price *</Label>
           <div className="mt-2 flex gap-2">
-            <DollarSign className="w-4 h-4 text-slate-400 mt-3" />
+            <span className="text-slate-400 text-sm mt-2.5">$</span>
             <Input
               type="number"
               step="0.01"
@@ -854,7 +842,6 @@ function FirstGiftStep({
               value={data.firstGift.price}
               onChange={(e) => {
                 const value = e.target.value;
-                // Only allow positive numbers with max 2 decimal places
                 if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
                   setData({ 
                     ...data, 
@@ -863,43 +850,43 @@ function FirstGiftStep({
                 }
               }}
               placeholder="5.00"
-              className="bg-[#2a2a2a] border-[#333] text-white"
+              className="bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
             />
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Minimum $0.01, maximum $999.99
+            $0.01 - $999.99
           </p>
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <Label className="text-white font-medium">Description *</Label>
+        <Label className="text-white font-medium text-sm">Description *</Label>
         <Textarea
           value={data.firstGift.description}
           onChange={(e) => setData({ 
             ...data, 
             firstGift: { ...data.firstGift, description: e.target.value }
           })}
-          placeholder="What does this gift mean to you? How will you use it?"
-          className="mt-2 bg-[#2a2a2a] border-[#333] text-white resize-none"
+          placeholder="What does this gift mean to you?"
+          className="mt-2 bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm resize-none"
           rows={3}
           maxLength={500}
         />
         <p className="text-xs text-slate-400 mt-1">
-          {data.firstGift.description.length}/500 characters
+          {data.firstGift.description.length}/500
         </p>
       </div>
 
       {/* Media */}
       <div>
-        <Label className="text-white font-medium">Gift Image</Label>
-        <div className="mt-2 flex items-center gap-4">
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-lg overflow-hidden">
+        <Label className="text-white font-medium text-sm">Gift Image</Label>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="w-20 h-20 bg-gradient-to-br from-emerald-600 to-blue-600 rounded-lg overflow-hidden flex-shrink-0">
             {data.firstGift.media ? (
               <img 
                 src={data.firstGift.media} 
-                alt="Gift preview"
+                alt="Gift"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -908,21 +895,15 @@ function FirstGiftStep({
               </div>
             )}
           </div>
-          <div className="flex flex-col gap-2">
-            <Input
-              value={data.firstGift.media}
-              onChange={(e) => setData({ 
-                ...data, 
-                firstGift: { ...data.firstGift, media: e.target.value }
-              })}
-              placeholder="Image URL"
-              className="bg-[#2a2a2a] border-[#333] text-white"
-            />
-            <Button size="sm" variant="outline" className="border-[#333] text-slate-400 hover:text-white">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload
-            </Button>
-          </div>
+          <Input
+            value={data.firstGift.media}
+            onChange={(e) => setData({ 
+              ...data, 
+              firstGift: { ...data.firstGift, media: e.target.value }
+            })}
+            placeholder="Image URL"
+            className="bg-[#1f1f1f] border-[#2a2a2a] text-white text-sm"
+          />
         </div>
       </div>
     </div>
@@ -932,32 +913,32 @@ function FirstGiftStep({
 function CompleteStep({ data }: { data: OnboardingData }) {
   return (
     <div className="text-center py-8">
-      <CheckCircle className="w-20 h-20 text-emerald-400 mx-auto mb-6" />
-      <h2 className="text-3xl font-bold text-white mb-4">You're All Set!</h2>
-      <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+      <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-white mb-2">You're All Set!</h2>
+      <p className="text-slate-400 mb-6">
         Your creator profile is ready! Fans can now visit your profile and send you gifts.
       </p>
       
-      <div className="bg-[#1f1f1f] rounded-lg p-6 mb-8 text-left max-w-md mx-auto">
-        <h3 className="text-white font-semibold mb-3">Your Profile:</h3>
-        <ul className="space-y-2 text-slate-300">
+      <div className="bg-[#1f1f1f] rounded-lg p-4 mb-6 text-left max-w-sm mx-auto border border-[#2a2a2a]">
+        <h3 className="text-white font-semibold mb-2 text-sm">Your Profile:</h3>
+        <ul className="space-y-1 text-slate-400 text-sm">
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
             Handle: @{data.handle}
           </li>
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
             Name: {data.name}
           </li>
           <li className="flex items-center">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2" />
-            First Gift: {data.firstGift.title} (${data.firstGift.price})
+            <CheckCircle className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
+            First Gift: {data.firstGift.title}
           </li>
         </ul>
       </div>
 
-      <div className="text-sm text-slate-400 mb-6">
-        Your profile will be available at: <br />
+      <div className="text-xs text-slate-400">
+        Profile URL: <br />
         <span className="text-emerald-400 font-mono">/profile/{data.handle}</span>
       </div>
     </div>

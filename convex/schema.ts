@@ -2,17 +2,23 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // Existing user authentication table
+  // User authentication and account table
   users: defineTable({
+    email: v.string(), // Required, unique email
     name: v.optional(v.string()),
-    email: v.optional(v.string()),
     image: v.optional(v.string()),
-    tokenIdentifier: v.string(),
-  }).index("by_token", ["tokenIdentifier"]),
+    tokenIdentifier: v.string(), // Clerk ID (subject)
+    emailVerified: v.boolean(), // Default false
+    createdAt: v.number(), // Timestamp
+  })
+    .index("by_token", ["tokenIdentifier"])
+    .index("by_email", ["email"]),
   
   // BuyMeADrink: Creator profiles
   creators: defineTable({
-    userId: v.optional(v.string()), // Link to users table if using auth
+    userId: v.id("users"), // Reference to users._id (Convex document ID)
+    clerkId: v.optional(v.string()), // Explicit Clerk ID for direct lookups
+    email: v.optional(v.string()), // Cache from users table for efficiency
     handle: v.string(), // Unique username (e.g., "conor")
     name: v.string(), // Display name
     tagline: v.optional(v.string()),
@@ -26,9 +32,13 @@ export default defineSchema({
       hideRealName: v.optional(v.boolean()),
       moderationRequired: v.optional(v.boolean()),
     })),
+    createdAt: v.optional(v.number()), // Timestamp (optional for migration compatibility)
+    lastUpdated: v.optional(v.number()), // Track changes (optional for migration compatibility)
   })
     .index("by_handle", ["handle"])
-    .index("by_userId", ["userId"]),
+    .index("by_userId", ["userId"])
+    .index("by_clerkId", ["clerkId"])
+    .index("by_email", ["email"]),
   
   // BuyMeADrink: Sponsor partnerships
   sponsors: defineTable({

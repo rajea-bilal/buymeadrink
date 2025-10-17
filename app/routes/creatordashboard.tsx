@@ -65,9 +65,9 @@ export default function Dashboard() {
 function DashboardContent() {
   const { user } = useUser();
   
-  // Use the existing working approach - get creator by userId
-  const creator = useQuery(api.creators.getCreatorByUserId, 
-    user?.id ? { userId: user.id } : "skip"
+  // Get creator by Clerk ID - this is the recommended way
+  const creator = useQuery(api.creators.getCreatorByClerkId, 
+    user?.id ? { clerkId: user.id } : "skip"
   );
   
   // Load related data if creator exists

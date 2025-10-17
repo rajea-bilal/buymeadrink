@@ -1,7 +1,8 @@
-import { Card } from "~/components/ui/card";
+import { PremiumCard } from "~/components/ui/premium-card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Gift, DollarSign, ShoppingCart } from "lucide-react";
+import { Gift, ShoppingCart, DollarSign } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 interface GiftCardProps {
   gift: {
@@ -30,59 +31,63 @@ export function GiftCard({ gift, creator, onPurchase, className = "" }: GiftCard
     }).format(price / 100);
   };
 
-  return (
-    <Card className={`bg-[#232323] border-[#2a2a2a] hover:border-emerald-600/50 transition-colors ${className}`}>
-      <div className="p-6">
-        {/* Media */}
-        {gift.media && (
-          <div className="mb-4">
-            {gift.type === 'image' ? (
-              <img 
-                src={gift.media} 
-                alt={gift.title}
-                className="w-full h-32 object-cover rounded-lg"
-              />
-            ) : (
-              <div className="w-full h-32 bg-[#1f1f1f] rounded-lg flex items-center justify-center">
-                <Gift className="w-8 h-8 text-slate-400" />
-              </div>
-            )}
-          </div>
-        )}
+  // Use gift media as background if available, otherwise use a default gift-themed background
+  const backgroundImage = gift.media && gift.type === 'image' ? gift.media : undefined;
 
-        {/* Content */}
-        <div className="space-y-3">
-          <div className="flex items-start justify-between">
-            <h3 className="text-white font-semibold text-lg">{gift.title}</h3>
+  return (
+    <div className={cn("relative", className)}>
+      <PremiumCard
+        backgroundImage={backgroundImage}
+        icon={Gift}
+        category="Gift Item"
+        title={gift.title}
+        description={gift.description}
+        leftInfo={{
+          label: "Creator",
+          value: creator.name
+        }}
+        rightInfo={{
+          label: "Price",
+          value: formatPrice(gift.price, gift.currency)
+        }}
+        actionLabel="Buy Gift"
+        onAction={gift.active ? () => onPurchase(gift) : undefined}
+        className={cn(
+          gift.active ? "hover:border-emerald-600/50" : "opacity-75",
+          !backgroundImage && "bg-gradient-to-br from-slate-800/90 to-slate-900/95 backdrop-blur-sm"
+        )}
+      >
+        {/* Custom bottom section for gift card specific content */}
+        <div className="mt-4 flex items-center justify-between">
+          {/* Status and Purchase Button */}
+          <div className="flex items-center gap-3">
             {!gift.active && (
-              <Badge variant="secondary" className="bg-red-900/20 text-red-400 border-red-600/30">
+              <Badge variant="secondary" className="bg-red-900/20 text-red-400 border-red-600/30 text-xs">
                 Inactive
               </Badge>
             )}
+            {gift.active && (
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-400 font-semibold text-sm">
+                  Available
+                </span>
+              </div>
+            )}
           </div>
-
-          <p className="text-slate-400 text-sm line-clamp-2">{gift.description}</p>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span className="text-emerald-400 font-semibold text-lg">
-                {formatPrice(gift.price, gift.currency)}
-              </span>
-            </div>
-
+          
+          {gift.active && (
             <Button
               onClick={() => onPurchase(gift)}
-              disabled={!gift.active}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 h-auto"
               size="sm"
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Buy Gift
+              <ShoppingCart className="w-3 h-3 mr-1.5" />
+              Purchase
             </Button>
-          </div>
+          )}
         </div>
-      </div>
-    </Card>
+      </PremiumCard>
+    </div>
   );
 }

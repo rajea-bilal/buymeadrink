@@ -77,7 +77,7 @@ export async function loader(args: Route.LoaderArgs) {
     const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL!);
     
     try {
-      const creator = await convex.query(api.creators.getCreatorByUserId, { userId });
+      const creator = await convex.query(api.creators.getCreatorByClerkId, { clerkId: userId });
       hasCreatorProfile = !!creator;
       
       // If authenticated but no creator profile, show onboarding button instead of redirecting

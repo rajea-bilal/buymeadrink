@@ -48,17 +48,19 @@ export const upsertUser = mutation({
       ) {
         await ctx.db.patch(existingUser._id, {
           name: identity.name,
-          email: identity.email,
+          email: identity.email || "",
         });
       }
       return existingUser;
     }
 
-    // Create new user
+    // Create new user with all required fields
     const userId = await ctx.db.insert("users", {
+      email: identity.email || "",
       name: identity.name,
-      email: identity.email,
       tokenIdentifier: identity.subject,
+      emailVerified: false, // Default to false, set true after verification
+      createdAt: Date.now(),
     });
 
     // Schedule welcome email; internal function handles config gating

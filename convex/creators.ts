@@ -467,15 +467,15 @@ export const getCreatorById = query({
 });
 
 /**
- * Get a creator by the linked Clerk userId
+ * Get a creator by the linked Convex userId
  */
 export const getCreatorByUserId = query({
-  args: { userId: v.string() },
+  args: { userId: v.id("users") },
   returns: v.union(
     v.object({
       _id: v.id("creators"),
       _creationTime: v.number(),
-      userId: v.optional(v.string()),
+      userId: v.id("users"),
       handle: v.string(),
       name: v.string(),
       tagline: v.optional(v.string()),
@@ -660,74 +660,40 @@ export const updateCreatorProfile = mutation({
       throw new Error("Not authenticated");
     }
 
-    // Get creator profile
+    // Look up the user to get their _id
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Get creator profile using the user's _id
     const creator = await ctx.db
       .query("creators")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
     if (!creator) {
       throw new Error("Creator profile not found");
     }
     
-    // Remove undefined values
+    // Remove undefined values and add lastUpdated
     const cleanUpdates = Object.fromEntries(
       Object.entries(args).filter(([_, value]) => value !== undefined)
     );
     
-    await ctx.db.patch(creator._id, cleanUpdates);
+    // Update creator profile with lastUpdated timestamp
+    await ctx.db.patch(creator._id, {
+      ...cleanUpdates,
+      lastUpdated: Date.now(),
+    });
     return null;
   },
 });
 
-
-/**
- * Create a new creator profile (temporary non-authenticated version)
- */
-export const createCreatorNoAuth = mutation({
-  args: {
-    userId: v.string(),
-    handle: v.string(),
-    name: v.string(),
-    tagline: v.optional(v.string()),
-    bio: v.optional(v.string()),
-    avatar: v.optional(v.string()),
-    banner: v.optional(v.string()),
-  },
-  returns: v.id("creators"),
-  handler: async (ctx, args) => {
-    console.log("🔧 createCreatorNoAuth mutation called with args:", args);
-    
-    // NO AUTHENTICATION - just proceed with database operations
-    
-    // Ensure handle is available
-    console.log("🔍 Checking if handle exists:", args.handle);
-    const existing = await ctx.db
-      .query("creators")
-      .withIndex("by_handle", (q) => q.eq("handle", args.handle))
-      .first();
-    
-    if (existing) {
-      console.error("❌ Handle already exists:", existing);
-      throw new Error("Handle is already taken");
-    }
-
-    console.log("✅ Handle is available, inserting creator...");
-    const id = await ctx.db.insert("creators", {
-      userId: args.userId,
-      handle: args.handle,
-      name: args.name,
-      tagline: args.tagline,
-      bio: args.bio,
-      avatar: args.avatar,
-      banner: args.banner,
-      active: true,
-    });
-    
-    console.log("✅ Creator inserted with ID:", id);
-    return id;
-  },
-});
 
 /**
  * Create a new creator profile (authenticated)
@@ -747,6 +713,16 @@ export const createCreator = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
+    }
+
+    // Look up the user to get their _id
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      throw new Error("User not found. Please sign in first.");
     }
 
     // Ensure handle is available
@@ -774,9 +750,13 @@ export const createCreator = mutation({
       throw new Error("Name must be between 2 and 50 characters");
     }
 
+    const now = Date.now();
+
     // Insert creator linked to authenticated user
     const id = await ctx.db.insert("creators", {
-      userId: identity.subject,
+      userId: user._id, // Reference to users._id (not Clerk ID)
+      clerkId: identity.subject, // Store Clerk ID explicitly
+      email: user.email, // Cache email from users table
       handle: args.handle,
       name: args.name,
       tagline: args.tagline,
@@ -784,6 +764,8 @@ export const createCreator = mutation({
       avatar: args.avatar,
       banner: args.banner,
       active: true,
+      createdAt: now,
+      lastUpdated: now,
     });
 
     // Send welcome email to the creator
@@ -851,10 +833,20 @@ export const createTier = mutation({
       throw new Error("Not authenticated");
     }
 
+    // Look up the user to get their Convex ID
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     // Get creator profile
     const creator = await ctx.db
       .query("creators")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
     if (!creator) {
@@ -901,10 +893,20 @@ export const updateTier = mutation({
       throw new Error("Tier not found");
     }
 
+    // Look up the user to get their Convex ID
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     // Get creator profile
     const creator = await ctx.db
       .query("creators")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
     if (!creator || tier.creatorId !== creator._id) {
@@ -940,10 +942,20 @@ export const deleteTier = mutation({
       throw new Error("Tier not found");
     }
 
+    // Look up the user to get their Convex ID
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     // Get creator profile
     const creator = await ctx.db
       .query("creators")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
     if (!creator || tier.creatorId !== creator._id) {
@@ -1134,9 +1146,19 @@ export const getAuthenticatedCreatorDashboard = query({
     }
 
     // Get creator profile by userId (Clerk's subject is the userId)
+    // First look up the user to get their Convex ID
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+    
+    if (!user) {
+      return null;
+    }
+
     const creator = await ctx.db
       .query("creators")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
     if (!creator) {
@@ -1197,9 +1219,6 @@ export const getAuthenticatedCreatorDashboard = query({
     };
   },
 });
-
-
-
 
 /**
  * Test query to verify Clerk + Convex authentication
@@ -1327,5 +1346,142 @@ export const getMonthlyEarnings = query({
       subscriptionCount: subscriptions.length,
       currency: orders[0]?.currency || "USD",
     };
+  },
+});
+
+/**
+ * Get a creator by Clerk ID (for authenticated users)
+ * This is the recommended way to fetch a creator on the frontend
+ */
+export const getCreatorByClerkId = query({
+  args: { clerkId: v.string() },
+  returns: v.union(
+    v.object({
+      _id: v.id("creators"),
+      _creationTime: v.number(),
+      userId: v.id("users"),
+      clerkId: v.optional(v.string()),
+      email: v.optional(v.string()),
+      handle: v.string(),
+      name: v.string(),
+      tagline: v.optional(v.string()),
+      bio: v.optional(v.string()),
+      avatar: v.optional(v.string()),
+      banner: v.optional(v.string()),
+      active: v.optional(v.boolean()),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("creators")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+    if (!existing) return null;
+    return {
+      _id: existing._id,
+      _creationTime: existing._creationTime,
+      userId: existing.userId,
+      clerkId: existing.clerkId,
+      email: existing.email,
+      handle: existing.handle,
+      name: existing.name,
+      tagline: existing.tagline,
+      bio: existing.bio,
+      avatar: existing.avatar,
+      banner: existing.banner,
+      active: existing.active,
+    };
+  },
+});
+
+/**
+ * Get a creator by userId (Convex document ID)
+ */
+
+/**
+ * Migration: Add createdAt and lastUpdated to existing creators
+ * This fixes schema validation errors for documents created before these fields were added
+ */
+export const migrateCreatorsAddTimestamps = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const now = Date.now();
+    const creators = await ctx.db.query("creators").collect();
+    
+    let updated = 0;
+    for (const creator of creators) {
+      // Only update if missing the fields
+      if (!creator.createdAt || !creator.lastUpdated) {
+        await ctx.db.patch(creator._id, {
+          createdAt: creator.createdAt || now,
+          lastUpdated: creator.lastUpdated || now,
+        });
+        updated++;
+      }
+    }
+    
+    console.log(`Migration: Updated ${updated} creators with timestamps`);
+    return null;
+  },
+});
+
+/**
+ * Migration: Fix creators with invalid userId format (Clerk ID instead of Convex ID)
+ * Also adds missing createdAt and lastUpdated timestamps
+ */
+export const migrateCreatorsFixUserId = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const now = Date.now();
+    const creators = await ctx.db.query("creators").collect();
+    
+    let updated = 0;
+    let errors = 0;
+    
+    for (const creator of creators) {
+      try {
+        // Check if userId is a string (Clerk ID) instead of an ID (Convex ID)
+        const userIdIsString = typeof creator.userId === "string" && !creator.userId.startsWith("jh7");
+        
+        if (userIdIsString && creator.clerkId) {
+          // Look up the user using the clerkId to get the Convex user ID
+          const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", creator.clerkId!))
+            .unique();
+          
+          if (user) {
+            // Update the creator with the correct Convex user ID
+            await ctx.db.patch(creator._id, {
+              userId: user._id,
+              createdAt: creator.createdAt || now,
+              lastUpdated: creator.lastUpdated || now,
+              email: creator.email || user.email,
+            });
+            updated++;
+            console.log(`✅ Fixed creator ${creator.handle}: linked to user ${user._id}`);
+          } else {
+            console.log(`⚠️ Could not find user for creator ${creator.handle} with clerkId ${creator.clerkId}`);
+            errors++;
+          }
+        } else if (!creator.createdAt || !creator.lastUpdated) {
+          // Just update timestamps if they're missing
+          await ctx.db.patch(creator._id, {
+            createdAt: creator.createdAt || now,
+            lastUpdated: creator.lastUpdated || now,
+          });
+          updated++;
+        }
+      } catch (err) {
+        console.error(`❌ Error migrating creator ${creator.handle}:`, err);
+        errors++;
+      }
+    }
+    
+    console.log(`Migration complete: ${updated} creators updated, ${errors} errors`);
+    return null;
   },
 });
